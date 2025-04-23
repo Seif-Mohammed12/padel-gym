@@ -114,24 +114,30 @@ public class LoginController {
 
                 // Update UI
                 javafx.application.Platform.runLater(() -> {
-                    String status = jsonResponse.getString("status");
-                    String message = jsonResponse.getString("message");
-                    responseLabel.setText(message);
-                    if (status.equals("success")) {
-                        responseLabel.getStyleClass().add("success");
-                        try {
-                            // Load success page
-                            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/padelfrontend/SuccessPage.fxml"));
-                            Scene successScene = new Scene(loader.load());
-                            Stage stage = (Stage) usernameField.getScene().getWindow();
-                            stage.setScene(successScene);
-                            stage.setTitle("Login Success");
-                            stage.setMaximized(true); // Keep full-screen
-                        } catch (Exception e) {
-                            responseLabel.setText("Error loading success page: " + e.getMessage());
+                    try {
+                        String status = jsonResponse.getString("status");
+                        String message = jsonResponse.optString("message", "No message provided"); // Use optString to avoid exception if "message" is missing
+                        responseLabel.setText(message);
+
+                        if (status.equals("success")) {
+                            responseLabel.getStyleClass().add("success");
+                            try {
+                                // Load success page
+                                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/padelfrontend/SuccessPage.fxml"));
+                                Scene successScene = new Scene(loader.load());
+                                Stage stage = (Stage) usernameField.getScene().getWindow();
+                                stage.setScene(successScene);
+                                stage.setTitle("Login Success");
+                                stage.setMaximized(true); // Keep full-screen
+                            } catch (Exception e) {
+                                responseLabel.setText("Error loading success page: " + e.getMessage());
+                                responseLabel.getStyleClass().remove("success");
+                            }
+                        } else {
                             responseLabel.getStyleClass().remove("success");
                         }
-                    } else {
+                    } catch (Exception e) {
+                        responseLabel.setText("Error parsing server response: " + e.getMessage());
                         responseLabel.getStyleClass().remove("success");
                     }
                 });
@@ -145,6 +151,7 @@ public class LoginController {
             }
         }).start();
     }
+
 
     @FXML
     private void goToSignUp(ActionEvent event) {

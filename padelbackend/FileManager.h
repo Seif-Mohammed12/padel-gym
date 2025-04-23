@@ -1,13 +1,15 @@
-#ifndef FILEMANAGER_H
-#define FILEMANAGER_H
+#pragma once
 
+#include "include/json.hpp"
 #include <string>
-#include <vector>
+using namespace std;
+
+using json = nlohmann::json;
 
 class FileManager {
 public:
-    static bool writeCSV(const std::string& filePath, const std::vector<std::vector<std::string>>& rows, bool append = false);
-    static std::vector<std::vector<std::string>> readCSV(const std::string& filePath);
+    static void save(const json& data, const string& filepath);
+    static json load(const string& filepath);
+    static bool exists(const string& filepath);
+    static void remove(const string& filepath);
 };
-
-#endif

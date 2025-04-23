@@ -1,6 +1,7 @@
 package com.example.padelfrontend;
 
 import javafx.animation.FadeTransition;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -26,12 +27,9 @@ public class SignUpController {
     @FXML private TextField visiblePasswordField;
     @FXML private ImageView togglePasswordIcon;
     @FXML private Label responseLabel;
-    @FXML
-    private TextField firstNameField;
-    @FXML
-    private TextField lastNameField;
+    @FXML private TextField firstNameField;
+    @FXML private TextField lastNameField;
     @FXML private TextField visibleConfirmPasswordField;
-
 
     private boolean isPasswordVisible = false;
 
@@ -110,7 +108,7 @@ public class SignUpController {
     private void sendSignUpRequest(String firstName, String lastName, String username, String password) {
         new Thread(() -> {
             try {
-                Socket socket = new Socket("localhost", 8080);
+                Socket socket = new Socket("localhost", 8080); // Connect to the C++ server at localhost:8080
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
@@ -125,41 +123,53 @@ public class SignUpController {
                 // Send request with newline
                 out.println(request.toString());
 
-                // Read response
+                // Read response from the C++ server
                 String response = in.readLine();
                 if (response == null) {
                     throw new Exception("No response from server");
                 }
+
+                // Parse the response
                 JSONObject jsonResponse = new JSONObject(response);
 
-                // Update UI
-                javafx.application.Platform.runLater(() -> {
-                    String status = jsonResponse.getString("status");
-                    String message = jsonResponse.getString("message");
-                    responseLabel.setText(message);
-                    if (status.equals("success")) {
-                        responseLabel.getStyleClass().add("success");
-                        goToLogin(new ActionEvent());
-                    } else {
+                // Update UI based on server response
+                Platform.runLater(() -> {
+                    try {
+                        String status = jsonResponse.optString("status", "error");
+                        String message = jsonResponse.optString("message", "No message provided");
+
+                        responseLabel.setText(message);
+                        if ("success".equals(status)) {
+                            responseLabel.getStyleClass().add("success");
+                            goToLogin();  // Move to the login page if successful
+                        } else {
+                            responseLabel.getStyleClass().remove("success");
+                        }
+                    } catch (Exception e) {
+                        responseLabel.setText("Error parsing server response: " + e.getMessage());
                         responseLabel.getStyleClass().remove("success");
                     }
                 });
 
-                socket.close();
+                socket.close(); // Close socket after the interaction
             } catch (Exception ex) {
-                javafx.application.Platform.runLater(() -> {
+                Platform.runLater(() -> {
                     responseLabel.setText("Error: " + ex.getMessage());
                     responseLabel.getStyleClass().remove("success");
                 });
             }
-        }).start();
+        }).start();  // Run in a separate thread to avoid blocking the UI thread
     }
+
     @FXML
-    private void goToLogin(ActionEvent event) {
+    private void goToLogin() {
         try {
+            // Load the Login page FXML
             Parent loginPage = FXMLLoader.load(getClass().getResource("LoginPage.fxml"));
 
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            // Get the current Stage directly from the Scene
+            Stage stage = (Stage) usernameField.getScene().getWindow();
+
             Scene currentScene = stage.getScene();
 
             // Fade out transition for the current scene
@@ -168,10 +178,10 @@ public class SignUpController {
             fadeOut.setToValue(0.0);
 
             fadeOut.setOnFinished(e -> {
-                // Set the new scene root after fade out completes
+                // Set the new scene root after fade-out completes
                 currentScene.setRoot(loginPage);
 
-                // Fade in transition for the new scene root (login page)
+                // Fade in transition for the new scene root (Login page)
                 FadeTransition fadeIn = new FadeTransition(Duration.millis(500), loginPage);
                 fadeIn.setFromValue(0.0);
                 fadeIn.setToValue(1.0);
@@ -179,11 +189,9 @@ public class SignUpController {
             });
 
             fadeOut.play();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 
 }
