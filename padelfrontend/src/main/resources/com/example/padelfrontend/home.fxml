@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane fx:id="homeRoot" styleClass="root" stylesheets="@home.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.padelfrontend.HomeController">
+
+    <!-- Top Navigation Bar -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="40" styleClass="navbar">
+            <Label styleClass="logo" text="Padel Gym" />
+            <Button styleClass="nav-button" text="Home" />
+            <Button styleClass="nav-button" text="Booking" />
+            <Button styleClass="nav-button" text="Subscription" />
+            <Button styleClass="nav-button" text="Gym" />
+            <Button styleClass="nav-button login-button" text="Login" />
+        </HBox>
+    </top>
+
+    <!-- Center Booking Container -->
+    <center>
+        <VBox alignment="CENTER" spacing="30">
+            <Label styleClass="booking-title" text="Find Center &amp; Available Times With Ease" />
+
+            <HBox alignment="CENTER" maxWidth="1000" spacing="20" styleClass="booking-container">
+                <TextField fx:id="sportComboBox" alignment="CENTER" editable="false" promptText="All sports" styleClass="booking-input" text="Padel" />
+
+                <StackPane alignment="CENTER_RIGHT">
+                    <DatePicker fx:id="datePicker" promptText="Choose Date..." styleClass="booking-input">
+                  <opaqueInsets>
+                     <Insets />
+                  </opaqueInsets>
+                  <StackPane.margin>
+                     <Insets />
+                  </StackPane.margin></DatePicker>
+                    <ImageView fitHeight="20" fitWidth="20" onMouseClicked="#openCalendar" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                            <Image url="@../../../icons/calendar.png" />
+                        </image>
+                  <StackPane.margin>
+                     <Insets right="15.0" />
+                  </StackPane.margin>
+                    </ImageView>
+
+                </StackPane>
+
+                <ComboBox fx:id="centerSearchField" promptText="Search center here..." styleClass="booking-input" />
+
+                <Button styleClass="explore-button" text="Explore" />
+            </HBox>
+        </VBox>
+    </center>
+
+</BorderPane>

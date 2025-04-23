@@ -1,0 +1,9 @@
+# ninja log v6
+8	4274	7666899782919430	CMakeFiles/padelbackend.dir/server.cpp.obj	491a84aa789dc9eb
+6	4206	7666901235381124	CMakeFiles/padelbackend.dir/main.cpp.obj	3efdd48a4dfd5f34
+6	4747	7666904076476962	CMakeFiles/padelbackend.dir/server.cpp.obj	491a84aa789dc9eb
+4748	5954	7666904123886192	padelbackend.exe	1856bcc44ccf4a43
+7	4659	7666910524029287	CMakeFiles/padelbackend.dir/server.cpp.obj	491a84aa789dc9eb
+4660	5953	7666910570579409	padelbackend.exe	1856bcc44ccf4a43
+7	4601	7666914808308091	CMakeFiles/padelbackend.dir/server.cpp.obj	491a84aa789dc9eb
+4601	5967	7666914854243592	padelbackend.exe	1856bcc44ccf4a43
