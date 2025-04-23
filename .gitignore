@@ -1,0 +1,35 @@
+# === Java/IntelliJ (frontend) ===
+.idea/                # Ignore IntelliJ IDEA project files in the root directory
+*.iml
+out/
+target/
+*.class
+
+# Java logs
+*.log
+
+# JavaFX specific
+*.fxml~*
+
+# === CMake/CLion (backend) ===
+cmake-build-*/       
+CMakeFiles/
+CMakeCache.txt
+Makefile
+build/
+compile_commands.json
+*.o
+*.obj
+*.exe
+*.out
+
+# === OS/Editor/System ===
+.DS_Store
+Thumbs.db
+*.swp
+
+# === Git ===
+.gitignore
+
+# Optional: VS Code or other editor settings
+.vscode/
