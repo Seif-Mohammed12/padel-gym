@@ -5,58 +5,47 @@
 
 using namespace std;
 
-void FileManager::save(const json& data, const string& filepath) {
-    bool fileExists = exists(filepath);
+// Relative paths to the root directory (one level up from cmake-build-debug)
+const string DATA_FILE = "../data.json";
+const string CLASSES_FILE = "../gym-classes.json";
 
-    // If the file exists, open it in read mode
-    if (fileExists) {
-        // Read existing data
-        ifstream inFile(filepath);
-        json existingData;
-        if (inFile.is_open()) {
-            inFile >> existingData;
-            inFile.close();
-        }
-
-        // Ensure the existing data is an array (even if it's empty)
-        if (!existingData.is_array()) {
-            existingData = json::array();
-        }
-
-        // Append the new data to the array
-        existingData.push_back(data);
-
-        // Now open the file in write mode to save the updated data
-        ofstream outFile(filepath, ios::trunc);  // Overwrite the file
-        if (outFile.is_open()) {
-            outFile << existingData.dump(4);  // Pretty print the JSON with 4 spaces of indentation
-            outFile.close();
-        }
+void FileManager::save(const json& data, const string& filename) {
+    string filepath = (filename == "data.json") ? DATA_FILE : CLASSES_FILE;
+    ofstream outFile(filepath, ios::trunc);
+    if (outFile.is_open()) {
+        outFile << data.dump(4);
+        outFile.close();
+        std::cout << "Successfully saved to " << filepath << std::endl;
     } else {
-        // If the file does not exist, create a new one with the data
-        ofstream outFile(filepath);
-        if (outFile.is_open()) {
-            json newArray = json::array();
-            newArray.push_back(data);  // Append the first entry
-            outFile << newArray.dump(4);  // Pretty print the JSON with 4 spaces of indentation
-            outFile.close();
-        }
+        std::cerr << "Failed to open " << filepath << " for writing" << std::endl;
     }
 }
 
-json FileManager::load(const string& filepath) {
+json FileManager::load(const string& filename) {
+    string filepath = (filename == "data.json") ? DATA_FILE : CLASSES_FILE;
+    if (!filesystem::exists(filepath)) {
+        std::cout << "File " << filepath << " does not exist. Returning empty array." << std::endl;
+        return json::array();
+    }
+
     ifstream file(filepath);
-    json data;
-    if (file.is_open()) {
-        file >> data;
+    if (!file.is_open()) {
+        std::cerr << "Failed to open " << filepath << " for reading" << std::endl;
+        return json::array();
     }
-    return data;
-}
 
-bool FileManager::exists(const string& filepath) {
-    return filesystem::exists(filepath);
-}
+    string content((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
+    file.close();
 
-void FileManager::remove(const string& filepath) {
-    filesystem::remove(filepath);
+    if (content.empty()) {
+        std::cout << "File " << filepath << " is empty. Returning empty array." << std::endl;
+        return json::array();
+    }
+
+    try {
+        return json::parse(content);
+    } catch (const json::parse_error& e) {
+        std::cerr << "Error parsing " << filepath << ": " << e.what() << std::endl;
+        return json::array();
+    }
 }

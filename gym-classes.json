@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Yoga Flow",
+    "instructor": "Sara Ahmed",
+    "time": "08:00 AM",
+    "image": "file:images/yoga.jpg",
+    "capacity": 1,
+    "currentParticipants": 1,
+    "waitlistSize": 1
+  },
+  {
+    "name": "Cardio Blast",
+    "instructor": "Mohamed Ali",
+    "time": "10:00 AM",
+    "image": "file:images/cardio.jpg",
+    "capacity": 1,
+    "currentParticipants": 1,
+    "waitlistSize": 1
+  },
+  {
+    "name": "Strength Training",
+    "instructor": "Laila Hassan",
+    "time": "12:00 PM",
+    "image": "file:images/strength.jpg",
+    "capacity": 1,
+    "currentParticipants": 1,
+    "waitlistSize": 1
+  },
+  {
+    "name": "Zumba Party",
+    "instructor": "Karim Mostafa",
+    "time": "06:00 PM",
+    "image": "file:images/zumba.jpg",
+    "capacity": 1,
+    "currentParticipants": 1,
+    "waitlistSize": 1
+  }
+]

@@ -20,10 +20,10 @@
     <top>
         <HBox fx:id="navbar" alignment="CENTER_LEFT" spacing="30" styleClass="navbar">
             <Label styleClass="logo" text="Padel Gym" />
-            <Button prefHeight="70.0" styleClass="nav-button" text="Home" />
-            <Button prefHeight="70.0" styleClass="nav-button" text="Booking" />
-            <Button prefHeight="70.0" styleClass="nav-button" text="Subscription" />
-            <Button prefHeight="70.0" styleClass="nav-button" text="Gym" />
+            <Button fx:id="homeButton" prefHeight="70.0" styleClass="nav-button" text="Home" />
+            <Button fx:id="bookingButton" onAction="#goToBooking" prefHeight="70.0" styleClass="nav-button" text="Booking" />
+            <Button fx:id="subscriptionButton" prefHeight="70.0" styleClass="nav-button" text="Subscription" />
+            <Button fx:id="gymButton" prefHeight="70.0" styleClass="nav-button" text="Gym" />
 
             <Pane HBox.hgrow="ALWAYS"/>
             <Button styleClass=" login-button" onAction="#gotoLogin" text="Login" />

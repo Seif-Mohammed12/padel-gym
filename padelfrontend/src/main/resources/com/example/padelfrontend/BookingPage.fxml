@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane fx:id="homeRoot" styleClass="root" stylesheets="@home.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.padelfrontend.BookingController">
+
+    <!-- Top Navigation Bar -->
+    <top>
+        <HBox fx:id="navbar" alignment="CENTER_LEFT" spacing="30" styleClass="navbar">
+            <Label styleClass="logo" text="Padel Gym" />
+            <Button onAction="#goToHome" fx:id="homeButton" prefHeight="70.0" styleClass="nav-button" text="Home" />
+            <Button fx:id="bookingButton" prefHeight="70.0" styleClass="nav-button" text="Booking" />
+            <Button fx:id="subscriptionButton" prefHeight="70.0" styleClass="nav-button" text="Subscription" />
+            <Button fx:id="gymButton" prefHeight="70.0" styleClass="nav-button" text="Gym" />
+            <Pane HBox.hgrow="ALWAYS" />
+            <Button styleClass="login-button" text="Login" />
+        </HBox>
+    </top>
+
+    <!-- Scrollable Full Page Content -->
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" styleClass="places-scroll-pane">
+            <VBox alignment="CENTER" spacing="30">
+                <Label styleClass="booking-title" text="Find Available Padel Places and Times" />
+
+                <!-- Filters/Search -->
+                <HBox alignment="CENTER" maxWidth="1100" spacing="40" styleClass="booking-container">
+                    <TextField fx:id="sportComboBox" alignment="CENTER" editable="false" prefWidth="180.0" promptText="All sports" styleClass="booking-input" text="Padel" />
+
+                    <StackPane alignment="CENTER_RIGHT">
+                        <DatePicker fx:id="datePicker" promptText="Choose Date..." styleClass="booking-input" />
+                        <ImageView fx:id="calendaricon" onMouseClicked="#openCalendar" fitHeight="20" fitWidth="20" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../../../icons/calendar.png" />
+                            </image>
+                            <StackPane.margin>
+                                <Insets right="15.0" />
+                            </StackPane.margin>
+                        </ImageView>
+                    </StackPane>
+
+                    <StackPane alignment="CENTER_RIGHT">
+                        <ComboBox fx:id="centerSearchField" prefWidth="250.0" promptText="Search center here..." style="-fx-prompt-text-fill: white; -fx-text-fill: white;" styleClass="booking-input" />
+                        <ImageView fx:id="dropdownicon" onMouseClicked="#showCombobox" fitHeight="20" fitWidth="20" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../../../icons/arrow.png" />
+                            </image>
+                            <StackPane.margin>
+                                <Insets right="15.0" />
+                            </StackPane.margin>
+                        </ImageView>
+                    </StackPane>
+
+                    <Button fx:id="exploreButton" styleClass="explore-button" text="Explore" />
+                </HBox>
+
+                <!-- Dynamic content gets inserted here -->
+                <VBox fx:id="placesContainer" spacing="20" />
+            <padding>
+               <Insets top="20.0" />
+            </padding>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

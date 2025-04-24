@@ -4,7 +4,7 @@
 #include <string>
 #include <thread>
 #include "include/json.hpp"
-#include "FileManager.h" // Make sure you have this file to handle the saving
+#include "FileManager.h"
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -13,27 +13,81 @@ using json = nlohmann::json;
 const int PORT = 8080;
 
 void handleClient(SOCKET clientSocket) {
+    std::string request;
     char buffer[4096];
-    int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
+    int bytesReceived;
 
-    if (bytesReceived > 0) {
-        std::string request(buffer, bytesReceived);  // Convert buffer to string
-        try {
-            json receivedJson = json::parse(request);
-
-            FileManager::save(receivedJson, "data.json");
-
-            // Respond back with a success message
-            std::string successResponse = R"({"status":"success","message":"User  created successfully"})";
-            send(clientSocket, successResponse.c_str(), successResponse.size(), 0);
-        } catch (const json::parse_error& e) {
-            // If JSON parsing fails, send error response
-            std::string errorResponse = R"({"status":"error","message":"Invalid JSON"})";
-            send(clientSocket, errorResponse.c_str(), errorResponse.size(), 0);
+    // Receive request until newline
+    while ((bytesReceived = recv(clientSocket, buffer, sizeof(buffer) - 1, 0)) > 0) {
+        buffer[bytesReceived] = '\0';
+        request += buffer;
+        size_t newlinePos = request.find('\n');
+        if (newlinePos != std::string::npos) {
+            request = request.substr(0, newlinePos);
+            break;
         }
     }
 
-    // Close the client socket after processing
+    if (request.empty()) {
+        std::cerr << "Error: No data received from client" << std::endl;
+        closesocket(clientSocket);
+        return;
+    }
+
+    try {
+        std::cout << "Received request: " << request << std::endl;
+
+        // Parse the incoming JSON request
+        json receivedJson = json::parse(request);
+        std::cout << "Successfully parsed JSON" << std::endl;
+
+        std::string action = receivedJson["action"].get<std::string>();
+        json response;
+
+        if (action == "signup") {
+            // For signup, append the entire receivedJson (minus the action) to data.json
+            json users = FileManager::load("data.json");
+            // Create a new user object with the fields directly from receivedJson
+            json newUser = {
+                    {"firstName", receivedJson.value("firstName", "")},
+                    {"lastName", receivedJson.value("lastName", "")},
+                    {"username", receivedJson.value("username", "")},
+                    {"password", receivedJson.value("password", "")}
+            };
+            users.push_back(newUser);
+            FileManager::save(users, "data.json");
+            response = {
+                    {"status", "success"},
+                    {"message", "Data saved"}
+            };
+        } else if (action == "login") {
+            // For login, send the contents of data.json
+            response = FileManager::load("data.json");
+        } else if (action == "get_classes") {
+            // For get_classes, send the contents of gym-classes.json
+            response = FileManager::load("gym-classes.json");
+        } else {
+            // For any other action, echo the request back to the client
+            response = receivedJson;
+        }
+
+        // Send the response back to the client
+        std::string responseStr = response.dump();
+        std::cout << "Sending response: " << responseStr << std::endl;
+        int sendResult = send(clientSocket, responseStr.c_str(), responseStr.size(), 0);
+        if (sendResult == SOCKET_ERROR) {
+            std::cerr << "Error sending response: " << WSAGetLastError() << std::endl;
+        }
+    } catch (const json::parse_error& e) {
+        std::cerr << "JSON Parse Error: " << e.what() << std::endl;
+        std::string errorResponse = R"({"status":"error","message":"Invalid JSON"})";
+        send(clientSocket, errorResponse.c_str(), errorResponse.size(), 0);
+    } catch (const std::exception& e) {
+        std::cerr << "General Error: " << e.what() << std::endl;
+        std::string errorResponse = R"({"status":"error","message":"Server error"})";
+        send(clientSocket, errorResponse.c_str(), errorResponse.size(), 0);
+    }
+
     closesocket(clientSocket);
 }
 
@@ -45,7 +99,7 @@ int main() {
         return 1;
     }
 
-    // Create socket for listening
+    // Create socket
     SOCKET listening = socket(AF_INET, SOCK_STREAM, 0);
     if (listening == INVALID_SOCKET) {
         std::cerr << "Socket creation failed!" << std::endl;
@@ -53,12 +107,11 @@ int main() {
         return 1;
     }
 
+    // Bind socket
     sockaddr_in hint{};
     hint.sin_family = AF_INET;
     hint.sin_port = htons(PORT);
     hint.sin_addr.S_un.S_addr = INADDR_ANY;
-
-    // Bind socket to a port
     if (bind(listening, (sockaddr*)&hint, sizeof(hint)) == SOCKET_ERROR) {
         std::cerr << "Binding failed!" << std::endl;
         closesocket(listening);
@@ -66,7 +119,7 @@ int main() {
         return 1;
     }
 
-    // Start listening for incoming connections
+    // Listen for connections
     if (listen(listening, SOMAXCONN) == SOCKET_ERROR) {
         std::cerr << "Listening failed!" << std::endl;
         closesocket(listening);
@@ -76,19 +129,16 @@ int main() {
 
     std::cout << "Server is running on port " << PORT << "...\n";
 
-    // Accept and handle client connections
+    // Accept client connections
     while (true) {
         SOCKET client = accept(listening, nullptr, nullptr);
         if (client == INVALID_SOCKET) {
             std::cerr << "Client connection failed!" << std::endl;
-            continue;  // Try accepting next client
+            continue;
         }
-
-        // Create a new thread to handle the client
         std::thread(handleClient, client).detach();
     }
 
-    // Cleanup and close the listening socket
     closesocket(listening);
     WSACleanup();
     return 0;

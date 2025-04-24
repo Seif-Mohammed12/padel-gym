@@ -22,16 +22,26 @@ import java.net.Socket;
 
 public class SignUpController {
 
-    @FXML private TextField usernameField;
-    @FXML private TextField emailField;
-    @FXML private PasswordField passwordField;
-    @FXML private PasswordField confirmPasswordField;
-    @FXML private TextField visiblePasswordField;
-    @FXML private ImageView togglePasswordIcon;
-    @FXML private Label responseLabel;
-    @FXML private TextField firstNameField;
-    @FXML private TextField lastNameField;
-    @FXML private TextField visibleConfirmPasswordField;
+    @FXML
+    private TextField usernameField;
+    @FXML
+    private TextField emailField;
+    @FXML
+    private PasswordField passwordField;
+    @FXML
+    private PasswordField confirmPasswordField;
+    @FXML
+    private TextField visiblePasswordField;
+    @FXML
+    private ImageView togglePasswordIcon;
+    @FXML
+    private Label responseLabel;
+    @FXML
+    private TextField firstNameField;
+    @FXML
+    private TextField lastNameField;
+    @FXML
+    private TextField visibleConfirmPasswordField;
 
     private boolean isPasswordVisible = false;
 
@@ -92,7 +102,8 @@ public class SignUpController {
                 : passwordField.getText().trim();
         String confirmPassword = confirmPasswordField.getText().trim();
 
-        if (firstName.isEmpty() || lastName.isEmpty() || username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+        if (firstName.isEmpty() || lastName.isEmpty() || username.isEmpty() || password.isEmpty()
+                || confirmPassword.isEmpty()) {
             responseLabel.setText("Please fill all fields");
             responseLabel.getStyleClass().remove("success");
             return;
@@ -110,26 +121,34 @@ public class SignUpController {
     private void sendSignUpRequest(String firstName, String lastName, String username, String password) {
         new Thread(() -> {
             try {
-                Socket socket = new Socket("localhost", 8080); // Connect to the C++ server at localhost:8080
+                Socket socket = new Socket("localhost", 8080);
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
                 // Build JSON request
                 JSONObject request = new JSONObject();
-                request.put("action", "signUp");
+                request.put("action", "signup");
                 request.put("firstName", firstName);
                 request.put("lastName", lastName);
                 request.put("username", username);
                 request.put("password", password);
 
-                // Send request with newline
-                out.println(request.toString());
+                // Convert to string and send
+                String requestString = request.toString();
+                System.out.println("Sending request: " + requestString);
+
+                // Send request with explicit newline
+                out.print(requestString + "\n");
+                out.flush();
 
                 // Read response from the C++ server
                 String response = in.readLine();
                 if (response == null) {
                     throw new Exception("No response from server");
                 }
+
+                // Debug: Print the response
+                System.out.println("Received response: " + response);
 
                 // Parse the response
                 JSONObject jsonResponse = new JSONObject(response);
@@ -143,7 +162,7 @@ public class SignUpController {
                         responseLabel.setText(message);
                         if ("success".equals(status)) {
                             responseLabel.getStyleClass().add("success");
-                            goToLogin();  // Move to the login page if successful
+                            goToLogin(); // Move to the login page if successful
                         } else {
                             responseLabel.getStyleClass().remove("success");
                         }
@@ -153,14 +172,15 @@ public class SignUpController {
                     }
                 });
 
-                socket.close(); // Close socket after the interaction
+                socket.close();
             } catch (Exception ex) {
                 Platform.runLater(() -> {
                     responseLabel.setText("Error: " + ex.getMessage());
+                    System.out.println("Error in SignUpController.sendSignUpRequest(): " + ex.getMessage());
                     responseLabel.getStyleClass().remove("success");
                 });
             }
-        }).start();  // Run in a separate thread to avoid blocking the UI thread
+        }).start();
     }
 
     @FXML
@@ -178,7 +198,8 @@ public class SignUpController {
             loginPage.translateXProperty().set(-scene.getWidth()); // Position the new page off-screen to the left
             scene.setRoot(rootContainer); // Set root to transition container first
 
-            // Create transitions for sliding out the current page and sliding in the new one
+            // Create transitions for sliding out the current page and sliding in the new
+            // one
             TranslateTransition slideOut = new TranslateTransition(Duration.millis(400), currentPage);
             slideOut.setToX(scene.getWidth()); // Move current page out to the right
 
@@ -199,6 +220,5 @@ public class SignUpController {
             e.printStackTrace();
         }
     }
-
 
 }
