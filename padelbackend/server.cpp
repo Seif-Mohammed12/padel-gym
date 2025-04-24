@@ -19,10 +19,8 @@ void handleClient(SOCKET clientSocket) {
     if (bytesReceived > 0) {
         std::string request(buffer, bytesReceived);  // Convert buffer to string
         try {
-            // Parse the received JSON request
             json receivedJson = json::parse(request);
 
-            // Save the received JSON data using FileManager (no additional logic here)
             FileManager::save(receivedJson, "data.json");
 
             // Respond back with a success message

@@ -1,6 +1,7 @@
 package com.example.padelfrontend;
 
 import javafx.animation.FadeTransition;
+import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -11,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.json.JSONObject;
@@ -164,34 +166,39 @@ public class SignUpController {
     @FXML
     private void goToLogin() {
         try {
-            // Load the Login page FXML
-            Parent loginPage = FXMLLoader.load(getClass().getResource("LoginPage.fxml"));
+            // Load the LoginPage FXML
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("LoginPage.fxml"));
+            Parent loginPage = loader.load();
 
-            // Get the current Stage directly from the Scene
-            Stage stage = (Stage) usernameField.getScene().getWindow();
+            Scene scene = usernameField.getScene();
+            Parent currentPage = scene.getRoot(); // Current root (which is the SignUpPage)
 
-            Scene currentScene = stage.getScene();
+            // Create a StackPane to manage the transition
+            StackPane rootContainer = new StackPane(currentPage, loginPage);
+            loginPage.translateXProperty().set(-scene.getWidth()); // Position the new page off-screen to the left
+            scene.setRoot(rootContainer); // Set root to transition container first
 
-            // Fade out transition for the current scene
-            FadeTransition fadeOut = new FadeTransition(Duration.millis(500), currentScene.getRoot());
-            fadeOut.setFromValue(1.0);
-            fadeOut.setToValue(0.0);
+            // Create transitions for sliding out the current page and sliding in the new one
+            TranslateTransition slideOut = new TranslateTransition(Duration.millis(400), currentPage);
+            slideOut.setToX(scene.getWidth()); // Move current page out to the right
 
-            fadeOut.setOnFinished(e -> {
-                // Set the new scene root after fade-out completes
-                currentScene.setRoot(loginPage);
+            TranslateTransition slideIn = new TranslateTransition(Duration.millis(400), loginPage);
+            slideIn.setToX(0); // Move the new page in from the left
 
-                // Fade in transition for the new scene root (Login page)
-                FadeTransition fadeIn = new FadeTransition(Duration.millis(500), loginPage);
-                fadeIn.setFromValue(0.0);
-                fadeIn.setToValue(1.0);
-                fadeIn.play();
+            // Play both transitions
+            slideOut.play();
+            slideIn.play();
+
+            // Once the slide-in transition finishes, set the new page as the root
+            slideIn.setOnFinished(event -> {
+                rootContainer.getChildren().clear(); // Remove both pages from the transition container
+                scene.setRoot(loginPage); // Set the new root to the loginPage
             });
 
-            fadeOut.play();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
 }

@@ -1,17 +1,23 @@
 package com.example.padelfrontend;
 
+import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -98,9 +104,37 @@ public class HomeController {
         });
     }
 
-    public void handleLogout() {
-        System.out.println("Logout clicked");
-        // Logic to switch back to login scene
+    @FXML
+    private void gotoLogin() {
+        try {
+            // Load the Login page FXML
+            Parent loginPage = FXMLLoader.load(getClass().getResource("LoginPage.fxml"));
+
+            // Get the current Stage directly from the Scene
+            Stage stage = (Stage) datePicker.getScene().getWindow();
+
+            Scene currentScene = stage.getScene();
+
+            // Fade out transition for the current scene
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(500), currentScene.getRoot());
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+
+            fadeOut.setOnFinished(e -> {
+                // Set the new scene root after fade-out completes
+                currentScene.setRoot(loginPage);
+
+                // Fade in transition for the new scene root (Login page)
+                FadeTransition fadeIn = new FadeTransition(Duration.millis(500), loginPage);
+                fadeIn.setFromValue(0.0);
+                fadeIn.setToValue(1.0);
+                fadeIn.play();
+            });
+
+            fadeOut.play();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void goToBookings() {

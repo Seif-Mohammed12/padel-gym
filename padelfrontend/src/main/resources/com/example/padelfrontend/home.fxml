@@ -26,7 +26,7 @@
             <Button prefHeight="70.0" styleClass="nav-button" text="Gym" />
 
             <Pane HBox.hgrow="ALWAYS"/>
-            <Button styleClass=" login-button" text="Login" />
+            <Button styleClass=" login-button" onAction="#gotoLogin" text="Login" />
         </HBox>
     </top>
 

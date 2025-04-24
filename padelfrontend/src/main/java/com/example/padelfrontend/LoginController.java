@@ -1,6 +1,7 @@
 package com.example.padelfrontend;
 
 import javafx.animation.FadeTransition;
+import javafx.animation.TranslateTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -12,6 +13,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.json.JSONObject;
@@ -156,33 +158,38 @@ public class LoginController {
     @FXML
     private void goToSignUp(ActionEvent event) {
         try {
-            Parent signUpPage = FXMLLoader.load(getClass().getResource("SignUpPage.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("SignUpPage.fxml"));
+            Parent signUpPage = loader.load();
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene currentScene = stage.getScene();
+            Parent loginPage = currentScene.getRoot();
 
-            // Fade out transition for the current scene
-            FadeTransition fadeOut = new FadeTransition(Duration.millis(500), currentScene.getRoot());
-            fadeOut.setFromValue(1.0);
-            fadeOut.setToValue(0.0);
+            StackPane transitionPane = new StackPane(loginPage, signUpPage);
+            signUpPage.translateXProperty().set(currentScene.getWidth());
+            currentScene.setRoot(transitionPane); // Set temp container first
 
-            fadeOut.setOnFinished(e -> {
-                // Set the new scene root after fade out completes
-                currentScene.setRoot(signUpPage);
+            TranslateTransition slideOut = new TranslateTransition(Duration.millis(400), loginPage);
+            slideOut.setToX(-currentScene.getWidth());
 
-                // Fade in transition for the new scene root (signUpPage)
-                FadeTransition fadeIn = new FadeTransition(Duration.millis(500), signUpPage);
-                fadeIn.setFromValue(0.0);
-                fadeIn.setToValue(1.0);
-                fadeIn.play();
+            TranslateTransition slideIn = new TranslateTransition(Duration.millis(400), signUpPage);
+            slideIn.setToX(0);
+
+            slideIn.setOnFinished(e -> {
+                transitionPane.getChildren().clear(); // remove both nodes from stackpane
+                currentScene.setRoot(signUpPage); // now it's safe to set the new root
             });
 
-            fadeOut.play();
+            slideOut.play();
+            slideIn.play();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+
+
 
 
 }
