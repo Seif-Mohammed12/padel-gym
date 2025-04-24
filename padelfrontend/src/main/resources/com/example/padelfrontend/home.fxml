@@ -13,17 +13,20 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.layout.Pane?>
 <BorderPane fx:id="homeRoot" styleClass="root" stylesheets="@home.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.padelfrontend.HomeController">
 
     <!-- Top Navigation Bar -->
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="40" styleClass="navbar">
+        <HBox fx:id="navbar" alignment="CENTER_LEFT" spacing="30" styleClass="navbar">
             <Label styleClass="logo" text="Padel Gym" />
-            <Button styleClass="nav-button" text="Home" />
-            <Button styleClass="nav-button" text="Booking" />
-            <Button styleClass="nav-button" text="Subscription" />
-            <Button styleClass="nav-button" text="Gym" />
-            <Button styleClass="nav-button login-button" text="Login" />
+            <Button prefHeight="70.0" styleClass="nav-button" text="Home" />
+            <Button prefHeight="70.0" styleClass="nav-button" text="Booking" />
+            <Button prefHeight="70.0" styleClass="nav-button" text="Subscription" />
+            <Button prefHeight="70.0" styleClass="nav-button" text="Gym" />
+
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Button styleClass=" login-button" text="Login" />
         </HBox>
     </top>
 
@@ -32,8 +35,8 @@
         <VBox alignment="CENTER" spacing="30">
             <Label styleClass="booking-title" text="Find Center &amp; Available Times With Ease" />
 
-            <HBox alignment="CENTER" maxWidth="1000" spacing="20" styleClass="booking-container">
-                <TextField fx:id="sportComboBox" alignment="CENTER" editable="false" promptText="All sports" styleClass="booking-input" text="Padel" />
+            <HBox alignment="CENTER" maxWidth="1100" spacing="40" styleClass="booking-container">
+                <TextField fx:id="sportComboBox" alignment="CENTER" editable="false" prefWidth="180.0" promptText="All sports" styleClass="booking-input" text="Padel" />
 
                 <StackPane alignment="CENTER_RIGHT">
                     <DatePicker fx:id="datePicker" promptText="Choose Date..." styleClass="booking-input">
@@ -43,7 +46,7 @@
                   <StackPane.margin>
                      <Insets />
                   </StackPane.margin></DatePicker>
-                    <ImageView fitHeight="20" fitWidth="20" onMouseClicked="#openCalendar" pickOnBounds="true" preserveRatio="true">
+                    <ImageView fx:id="calendaricon" fitHeight="20" fitWidth="20" onMouseClicked="#openCalendar" pickOnBounds="true" preserveRatio="true">
                         <image>
                             <Image url="@../../../icons/calendar.png" />
                         </image>
@@ -54,7 +57,26 @@
 
                 </StackPane>
 
-                <ComboBox fx:id="centerSearchField" promptText="Search center here..." styleClass="booking-input" />
+                <StackPane alignment="CENTER_RIGHT">
+                    <ComboBox fx:id="centerSearchField" prefWidth="250.0" promptText="Search center here..." style="-fx-prompt-text-fill: white; -fx-text-fill: white;" styleClass="booking-input">
+                        <opaqueInsets>
+                            <Insets />
+                        </opaqueInsets>
+                        <StackPane.margin>
+                            <Insets />
+                        </StackPane.margin>
+                    </ComboBox>
+
+                    <ImageView fx:id="dropdownicon" fitHeight="20" fitWidth="20" onMouseClicked="#showCombobox" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                            <Image url="@../../../icons/arrow.png" />
+                        </image>
+                        <StackPane.margin>
+                            <Insets right="15.0" />
+                        </StackPane.margin>
+                    </ImageView>
+                </StackPane>
+
 
                 <Button styleClass="explore-button" text="Explore" />
             </HBox>
