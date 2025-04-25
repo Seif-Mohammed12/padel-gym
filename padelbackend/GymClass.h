@@ -16,7 +16,7 @@ private:
     int capacity;
     std::vector<int> participants;
     std::queue<int> waitlist;
-    std::string imagePath; // New field for image path
+    std::string imagePath;
 
 public:
     // Constructor with imagePath
@@ -28,7 +28,6 @@ public:
 
     // Book a member into the class or waitlist
     bool bookClass(int memberId) {
-
         if (participants.size() < static_cast<size_t>(capacity)) {
             participants.push_back(memberId);
             return true; // Successfully booked
@@ -91,7 +90,7 @@ public:
         j["participants"] = participants;
         j["waitlist"] = queueToVector(waitlist);
         j["waitlistSize"] = waitlist.size();
-        j["imagePath"] = imagePath; // Include imagePath in JSON
+        j["imagePath"] = imagePath;
         return j;
     }
 
@@ -102,16 +101,17 @@ public:
         gymClass.instructor = j.at("instructor").get<std::string>();
         gymClass.time = j.at("time").get<std::string>();
         gymClass.capacity = j.at("capacity").get<int>();
-        gymClass.participants = j.at("participants").get<std::vector<int>>();
-        std::vector<int> waitlistVec = j.at("waitlist").get<std::vector<int>>();
+        // Use value() to provide defaults for missing fields
+        gymClass.participants = j.value("participants", std::vector<int>{});
+        std::vector<int> waitlistVec = j.value("waitlist", std::vector<int>{});
         for (int id : waitlistVec) {
             gymClass.waitlist.push(id);
         }
-        gymClass.imagePath = j.value("imagePath", ""); // Get imagePath, default to empty string if not present
+        gymClass.imagePath = j.value("imagePath", "");
         return gymClass;
     }
 
-    // Getters (for use in server if needed)
+    // Getters
     std::string getName() const { return name; }
     int getCapacity() const { return capacity; }
     int getCurrentParticipants() const { return static_cast<int>(participants.size()); }

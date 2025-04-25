@@ -7,10 +7,27 @@ using namespace std;
 
 // Relative paths to the root directory (one level up from cmake-build-debug)
 const string DATA_FILE = "../data.json";
-const string CLASSES_FILE = "../gym-classes.json";
+const string GYM_CLASSES_FILE = "../gym-classes.json";
+const string PADEL_CLASSES_FILE = "../padel-classes.json";
 
 void FileManager::save(const json& data, const string& filename) {
-    string filepath = (filename == "data.json") ? DATA_FILE : CLASSES_FILE;
+    if (!data.is_array()) {
+        std::cerr << "Data to save is not an array for " << filename << ". Skipping save." << std::endl;
+        return;
+    }
+
+    string filepath;
+    if (filename == "data.json") {
+        filepath = DATA_FILE;
+    } else if (filename == "gym-classes.json") {
+        filepath = GYM_CLASSES_FILE;
+    } else if (filename == "padel-classes.json") {
+        filepath = PADEL_CLASSES_FILE;
+    } else {
+        std::cerr << "Unknown filename: " << filename << std::endl;
+        return;
+    }
+
     ofstream outFile(filepath, ios::trunc);
     if (outFile.is_open()) {
         outFile << data.dump(4);
@@ -22,7 +39,18 @@ void FileManager::save(const json& data, const string& filename) {
 }
 
 json FileManager::load(const string& filename) {
-    string filepath = (filename == "data.json") ? DATA_FILE : CLASSES_FILE;
+    string filepath;
+    if (filename == "data.json") {
+        filepath = DATA_FILE;
+    } else if (filename == "gym-classes.json") {
+        filepath = GYM_CLASSES_FILE;
+    } else if (filename == "padel-classes.json") {
+        filepath = PADEL_CLASSES_FILE;
+    } else {
+        std::cerr << "Unknown filename: " << filename << std::endl;
+        return json::array();
+    }
+
     if (!filesystem::exists(filepath)) {
         std::cout << "File " << filepath << " does not exist. Returning empty array." << std::endl;
         return json::array();
@@ -43,7 +71,13 @@ json FileManager::load(const string& filename) {
     }
 
     try {
-        return json::parse(content);
+        json data = json::parse(content);
+        if (!data.is_array()) {
+            std::cerr << "Loaded data from " << filepath << " is not an array. Returning empty array." << std::endl;
+            return json::array();
+        }
+        std::cout << "Loaded JSON from " << filepath << ": " << data.dump() << std::endl;
+        return data;
     } catch (const json::parse_error& e) {
         std::cerr << "Error parsing " << filepath << ": " << e.what() << std::endl;
         return json::array();

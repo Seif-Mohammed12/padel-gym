@@ -22,3 +22,5 @@ add_executable(padelbackend
 
 # Link the socket library
 target_link_libraries(padelbackend PRIVATE ws2_32)
+
+

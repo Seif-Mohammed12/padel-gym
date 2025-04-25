@@ -1,0 +1,149 @@
+[
+    {
+        "availableTimes": [
+            "10:00 AM",
+            "12:00 PM",
+            "02:00 PM"
+        ],
+        "image": "file:images/padelace.jpg",
+        "location": "Zamalek, Cairo",
+        "name": "Padel Ace"
+    },
+    {
+        "availableTimes": [
+            "11:00 AM",
+            "01:00 PM",
+            "03:00 PM"
+        ],
+        "image": "file:images/padelhood.png",
+        "location": "Sheikh Zayed, Giza",
+        "name": "Padel Hood"
+    },
+    {
+        "availableTimes": [
+            "08:00 AM",
+            "09:30 AM",
+            "11:00 AM",
+            "12:30 PM",
+            "02:00 PM",
+            "03:30 PM",
+            "05:00 PM",
+            "06:30 PM",
+            "08:00 PM"
+        ],
+        "image": "file:images/gopadel.png",
+        "location": "Downtown Cairo",
+        "name": "Go! Padel"
+    },
+    {
+        "availableTimes": [
+            "10:00 AM",
+            "11:30 AM",
+            "01:00 PM",
+            "02:30 PM",
+            "04:00 PM",
+            "05:30 PM",
+            "07:00 PM",
+            "08:30 PM"
+        ],
+        "image": "file:images/padelhouse.png",
+        "location": "New Cairo",
+        "name": "Padel House"
+    },
+    {
+        "availableTimes": [
+            "09:00 AM",
+            "10:00 AM",
+            "11:00 AM",
+            "12:00 PM",
+            "01:00 PM",
+            "02:00 PM",
+            "03:00 PM",
+            "04:00 PM",
+            "05:00 PM"
+        ],
+        "image": "file:images/padeldose.png",
+        "location": "Fifth Settlement, New Cairo",
+        "name": "Padel Dose"
+    },
+    {
+        "availableTimes": [
+            "08:00 AM",
+            "09:00 AM",
+            "10:00 AM",
+            "11:00 AM",
+            "12:00 PM",
+            "01:00 PM",
+            "02:00 PM",
+            "03:00 PM",
+            "04:00 PM",
+            "05:00 PM"
+        ],
+        "image": "file:images/sdpadel.png",
+        "location": "Nasr City, Cairo",
+        "name": "SD Padel"
+    },
+    {
+        "availableTimes": [
+            "09:00 AM",
+            "10:30 AM",
+            "12:00 PM",
+            "01:30 PM",
+            "03:00 PM",
+            "04:30 PM",
+            "06:00 PM",
+            "07:30 PM",
+            "09:00 PM"
+        ],
+        "image": "file:images/vertexpadel.png",
+        "location": "Heliopolis, Cairo",
+        "name": "Vertex Padel"
+    },
+    {
+        "availableTimes": [
+            "10:00 AM",
+            "11:30 AM",
+            "01:00 PM",
+            "02:30 PM",
+            "04:00 PM",
+            "05:30 PM",
+            "07:00 PM",
+            "08:30 PM",
+            "10:00 PM"
+        ],
+        "image": "file:images/padelpoint.png",
+        "location": "6th of October, Giza",
+        "name": "Padel Point"
+    },
+    {
+        "availableTimes": [
+            "10:00 AM",
+            "11:00 AM",
+            "12:00 PM",
+            "01:00 PM",
+            "02:00 PM",
+            "03:00 PM",
+            "04:00 PM",
+            "05:00 PM",
+            "06:00 PM",
+            "07:00 PM"
+        ],
+        "image": "file:images/xpadel.jpg",
+        "location": "Nasr City, Cairo",
+        "name": "XPadel"
+    },
+    {
+        "availableTimes": [
+            "09:00 AM",
+            "10:30 AM",
+            "12:00 PM",
+            "01:30 PM",
+            "03:00 PM",
+            "04:30 PM",
+            "06:00 PM"
+        ],
+        "image": "file:C:\\Users\\seife\\padel-gym\\images\\srpadel.jpg",
+        "location": "Maadi, Cairo",
+        "name": "SR Padel"
+    }
+]

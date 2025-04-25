@@ -81,7 +81,7 @@ public class BookingController {
         calendaricon.setCursor(Cursor.HAND);
         try {
             // Path to your JSON file
-            String jsonFilePath = "padel-places.json";
+            String jsonFilePath = "padelbackend/padel-classes.json";
 
             // Read file content
             String content = new String(Files.readAllBytes(Paths.get(jsonFilePath)));

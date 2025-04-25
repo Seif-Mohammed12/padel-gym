@@ -1,0 +1,277 @@
+/* Root styling (matches .root in home.css) */
+.root {
+    -fx-background-color: linear-gradient(to bottom, #0f1f3d, #000000);
+}
+
+/* Navigation Bar (matches .navbar in home.css) */
+.navbar {
+    -fx-background-color: rgba(15, 15, 30, 0.95);
+    -fx-padding: 0 40;
+    -fx-min-height: 70;
+    -fx-alignment: center-left;
+}
+
+/* Logo (matches .logo in home.css) */
+.logo {
+    -fx-text-fill: #3a82f7;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial";
+}
+
+/* Navigation Buttons (matches .nav-button in home.css) */
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial";
+    -fx-cursor: hand;
+    -fx-padding: 10 20;
+}
+
+.nav-button:hover {
+    -fx-text-fill: #3a82f7;
+    -fx-background-color: rgba(30, 30, 50, 1.0);
+    -fx-background-radius: 10;
+}
+
+.nav-button:pressed {
+    -fx-background-color: rgba(30, 30, 50, 1.0);
+    -fx-scale-x: 1;
+    -fx-scale-y: 1;
+}
+
+/* Login/Logout Button (matches .login-button in home.css) */
+.login-button {
+    -fx-background-color: linear-gradient(to right, #1f1f2e, #2c2c3d);
+    -fx-text-fill: #e0e0e0;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 10, 0.3, 0, 3);
+    -fx-cursor: hand;
+    -fx-transition: all 0.3s ease;
+    -fx-border-color: #3a3a50;
+    -fx-border-width: 1;
+}
+
+.login-button:hover {
+    -fx-scale-x: 1.08;
+    -fx-scale-y: 1.08;
+    -fx-effect: dropshadow(gaussian, rgba(60, 60, 80, 0.6), 12, 0.5, 0, 4);
+    -fx-background-color: linear-gradient(to right, #29293e, #35354a);
+}
+
+/* ScrollPane (matches .places-scroll-pane in BookingPage.fxml) */
+.places-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+/* Title (matches .booking-title in home.css) */
+.booking-title {
+    -fx-text-fill: white;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Roboto";
+}
+
+/* Form Card (matches .booking-container in home.css) */
+.booking-container {
+    -fx-background-color: rgba(20, 20, 20, 0.85);
+    -fx-background-radius: 60;
+    -fx-padding: 25 35;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 20, 0.3, 0, 10);
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 60;
+    -fx-pref-width: 400px;
+    -fx-alignment: center;
+}
+
+/* Form Title (custom for manager page) */
+.form-title {
+    -fx-text-fill: white;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Roboto";
+    -fx-padding: 0 0 10 0;
+}
+
+/* Form Labels (custom for manager page) */
+.form-label {
+    -fx-text-fill: white;
+    -fx-font-family: "Arial";
+    -fx-font-size: 14px;
+    -fx-opacity: 0.9;
+}
+
+.form-label:hover {
+    -fx-opacity: 1.0;
+}
+
+/* Styling for TextFields (matches .booking-input in home.css) */
+TextField {
+    -fx-background-color: #1c1c1c;
+    -fx-text-fill: white;
+    -fx-font-family: "Arial";
+    -fx-font-size: 14px;
+    -fx-prompt-text-fill: white;
+    -fx-background-radius: 30;
+    -fx-padding: 10 20;
+    -fx-border-color: transparent;
+}
+
+TextField:focused {
+    -fx-border-color: #3a82f7;
+    -fx-border-width: 1;
+    -fx-border-radius: 30;
+}
+
+/* Browse Button (custom for image selection) */
+Button {
+    -fx-background-color: #0a1a36;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16;
+    -fx-background-radius: 20;
+    -fx-cursor: hand;
+}
+
+Button:hover {
+    -fx-background-color: #3a82f7;
+}
+
+/* Save Button (matches .explore-button in home.css) */
+.explore-button {
+    -fx-background-color: #0a1a36;
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 24;
+    -fx-background-radius: 30;
+    -fx-cursor: hand;
+}
+
+.explore-button:hover {
+    -fx-background-color: #3a82f7;
+    -fx-text-fill: white;
+}
+
+.explore-button:disabled {
+    -fx-background-color: #1c1c1c;
+    -fx-opacity: 0.6;
+}
+
+/* Toggle Buttons (for switching between Padel Centers and Gym Classes) */
+.toggle-button {
+    -fx-background-color: #0a1a36;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+    -fx-background-radius: 20;
+    -fx-cursor: hand;
+}
+
+.toggle-button:hover {
+    -fx-background-color: #3a82f7;
+}
+
+.toggle-button:selected {
+    -fx-background-color: #3a82f7;
+    -fx-text-fill: white;
+}
+
+/* Message Label (for success/error messages) */
+.message-label {
+    -fx-font-size: 14px;
+    -fx-font-family: "Arial";
+    -fx-font-weight: bold;
+    -fx-padding: 5 0;
+    -fx-alignment: center;
+}
+
+.message-label.success {
+    -fx-text-fill: #4CAF50; /* Green for success */
+}
+
+.message-label.error {
+    -fx-text-fill: #FF4D4D; /* Red for error */
+}
+
+/* Existing Items Container (matches placesContainer in BookingPage.fxml) */
+#itemsContainer {
+    -fx-spacing: 20;
+    -fx-alignment: center;
+    -fx-max-width: 600;
+}
+
+/* Item Card (matches .padel-place-card in home.css) */
+.center-card {
+    -fx-background-color: #1e1e1e;
+    -fx-background-radius: 15;
+    -fx-padding: 20;
+    -fx-spacing: 15;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 4);
+    -fx-alignment: center;
+    -fx-max-width: 500;
+}
+
+/* Item Card Image */
+.center-image {
+    -fx-fit-height: 100;
+    -fx-fit-width: 150;
+    -fx-preserve-ratio: true;
+}
+
+/* Item Card Labels */
+.center-name {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-family: "Arial";
+    -fx-padding: 5 0;
+}
+
+.center-detail {
+    -fx-font-size: 14px;
+    -fx-text-fill: #B0BEC5;
+    -fx-font-family: "Arial";
+    -fx-padding: 2 0;
+}
+
+/* Delete Button for Items */
+.delete-button {
+    -fx-background-color: #FF4D4D;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16;
+    -fx-background-radius: 20;
+    -fx-cursor: hand;
+}
+
+.delete-button:hover {
+    -fx-background-color: #FF6666;
+}
+
+/* Styling for HBox containers */
+HBox {
+    -fx-spacing: 15;
+    -fx-alignment: center;
+}
+.edit-button {
+    -fx-background-color: #f7a83a; /* Orange */
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-padding: 5px 10px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+.edit-button:hover {
+    -fx-background-color: #e6952e; /* Darker orange on hover */
+}

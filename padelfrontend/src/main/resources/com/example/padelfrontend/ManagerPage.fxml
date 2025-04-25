@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="managerRoot" styleClass="root" stylesheets="@ManagerPage.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.padelfrontend.ManagerPageController">
+    <!-- Top Navigation Bar -->
+    <top>
+        <HBox fx:id="navbar" alignment="CENTER_LEFT" spacing="30" styleClass="navbar">
+            <Label styleClass="logo" text="Padel Gym" />
+            <Button fx:id="homeButton" prefHeight="70.0" styleClass="nav-button" text="Home" onAction="#goToHome"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Button fx:id="logoutButton" styleClass="login-button" text="Logout" onAction="#logout"/>
+        </HBox>
+    </top>
+
+    <!-- Scrollable Main Content -->
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" styleClass="places-scroll-pane">
+            <VBox alignment="CENTER" spacing="30">
+                <!-- Title -->
+                <Label styleClass="booking-title" text="Manage Classes and Centers" />
+
+                <!-- Toggle Buttons for Switching Between Padel Centers and Gym Classes -->
+                <HBox spacing="20" alignment="CENTER">
+                    <Button fx:id="showPadelButton" text="Manage Padel Centers" onAction="#showPadelCenters" styleClass="toggle-button"/>
+                    <Button fx:id="showGymButton" text="Manage Gym Classes" onAction="#showGymClasses" styleClass="toggle-button"/>
+                </HBox>
+
+                <!-- Form for Adding a New Item (Padel Center or Gym Class) -->
+                <VBox fx:id="formCard" alignment="CENTER" spacing="15" styleClass="booking-container">
+                    <Label fx:id="formTitle" text="Add a New Padel Center" styleClass="form-title"/>
+
+                    <!-- Form Fields -->
+                    <VBox fx:id="formContainer" spacing="10" alignment="CENTER">
+                        <!-- Common Fields -->
+                        <Label fx:id="nameLabel" text="Center Name:" styleClass="form-label"/>
+                        <TextField fx:id="nameField" promptText="Enter name"/>
+
+                        <!-- Padel Center Fields -->
+                        <Label fx:id="timesLabel" text="Available Times (comma-separated):" styleClass="form-label"/>
+                        <TextField fx:id="timesField" promptText="e.g., 10:00 AM, 12:00 PM"/>
+
+                        <Label fx:id="locationLabel" text="Location:" styleClass="form-label"/>
+                        <TextField fx:id="locationField" promptText="Enter location"/>
+
+                        <!-- Gym Class Fields -->
+                        <Label fx:id="instructorLabel" text="Instructor:" styleClass="form-label" visible="false" managed="false"/>
+                        <TextField fx:id="instructorField" promptText="Enter instructor name" visible="false" managed="false"/>
+
+                        <Label fx:id="timeLabel" text="Time:" styleClass="form-label" visible="false" managed="false"/>
+                        <TextField fx:id="timeField" promptText="e.g., 08:00 AM" visible="false" managed="false"/>
+
+                        <Label fx:id="capacityLabel" text="Capacity:" styleClass="form-label" visible="false" managed="false"/>
+                        <TextField fx:id="capacityField" promptText="Enter capacity (number)" visible="false" managed="false"/>
+
+                        <!-- Image Field (Common) -->
+                        <Label text="Image:" styleClass="form-label"/>
+                        <HBox spacing="10" alignment="CENTER">
+                            <TextField fx:id="imageField" promptText="Select image..." editable="false"/>
+                            <Button text="Browse" onAction="#chooseImage"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Message Label -->
+                    <Label fx:id="messageLabel" text="" styleClass="message-label" visible="false" managed="false"/>
+
+                    <!-- Save button -->
+                    <Button fx:id="saveButton" text="Save Center" onAction="#saveItem" styleClass="explore-button"/>
+                </VBox>
+
+                <!-- Section for Existing Items (Padel Centers or Gym Classes) -->
+                <VBox fx:id="itemsContainer" spacing="20" alignment="CENTER">
+                    <Label fx:id="itemsTitle" text="Existing Padel Centers" styleClass="form-title"/>
+                    <!-- Dynamic content will be inserted here -->
+                </VBox>
+
+                <padding>
+                    <Insets top="20.0" bottom="20.0"/>
+                </padding>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>
