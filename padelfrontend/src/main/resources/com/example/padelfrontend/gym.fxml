@@ -3,26 +3,35 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.Pane?>
 
-<VBox stylesheets="@home.css" styleClass="root" xmlns="http://javafx.com/javafx/20" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.padelfrontend.GymController">
+<AnchorPane stylesheets="@gym.css" styleClass="root" xmlns="http://javafx.com/javafx/20" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.padelfrontend.GymController">
     <!-- Navigation Bar -->
-    <HBox fx:id="navbar" styleClass="navbar" alignment="CENTER" spacing="25" style="-fx-padding: 20 0;">
-        <Button fx:id="homeButton" text="Home" styleClass="nav-button" onAction="#goToHome"/>
-        <Button fx:id="bookingButton" text="Booking" styleClass="nav-button" onAction="#goToBooking"/>
-        <Button fx:id="subscriptionButton" text="Subscription" styleClass="nav-button" onAction="#goToSubscription"/>
-        <Button fx:id="gymButton" text="Gym" styleClass="nav-button" onAction="#goToGym"/>
+    <HBox fx:id="navbar" alignment="CENTER_LEFT" spacing="30" styleClass="navbar" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <Label styleClass="logo" text="Padel Gym" />
+        <Button fx:id="homeButton" onAction="#goToHome" prefHeight="70.0" styleClass="nav-button" text="Home" />
+        <Button fx:id="bookingButton" onAction="#goToBooking" prefHeight="70.0" styleClass="nav-button" text="Booking" />
+        <Button fx:id="subscriptionButton" onAction="#goToSubscription" prefHeight="70.0" styleClass="nav-button" text="Subscription" />
+        <Button fx:id="gymButton" prefHeight="70.0" styleClass="nav-button" text="Gym" />
+
+        <Pane HBox.hgrow="ALWAYS"/>
+        <Button styleClass="login-button" text="Login" />
     </HBox>
 
-    <!-- Header Section with Tagline -->
-    <HBox styleClass="header-section" alignment="CENTER" style="-fx-padding: 30 0;">
-        <Label fx:id="tagline" text="Join the Movement" styleClass="tagline"/>
-    </HBox>
+    <!-- Main Content -->
+    <VBox fx:id="mainVBox" AnchorPane.topAnchor="70" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0">
+        <!-- Header Section with Tagline -->
+        <HBox styleClass="header-section" alignment="CENTER" style="-fx-padding: 30 0;">
+            <Label fx:id="tagline" text="Join the Movement" styleClass="tagline"/>
+        </HBox>
 
-    <!-- Scrollable Grid for Gym Classes -->
-    <ScrollPane style="-fx-background-color: transparent; -fx-background: transparent;" fitToWidth="true">
-        <FlowPane fx:id="classesContainer" alignment="CENTER" hgap="20" vgap="20" style="-fx-padding: 30;"/>
-    </ScrollPane>
-</VBox>
+        <!-- Scrollable Grid for Gym Classes -->
+        <ScrollPane style="-fx-background-color: transparent; -fx-background: transparent;" fitToWidth="true">
+            <FlowPane fx:id="classesContainer" alignment="CENTER" hgap="20" vgap="20" style="-fx-padding: 30;"/>
+        </ScrollPane>
+    </VBox>
+</AnchorPane>

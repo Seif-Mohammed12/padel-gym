@@ -21,10 +21,10 @@
     <top>
         <HBox fx:id="navbar" alignment="CENTER_LEFT" spacing="30" styleClass="navbar">
             <Label styleClass="logo" text="Padel Gym" />
-            <Button onAction="#goToHome" fx:id="homeButton" prefHeight="70.0" styleClass="nav-button" text="Home" />
+            <Button fx:id="homeButton" onAction="#goToHome" prefHeight="70.0" styleClass="nav-button" text="Home" />
             <Button fx:id="bookingButton" prefHeight="70.0" styleClass="nav-button" text="Booking" />
-            <Button fx:id="subscriptionButton" prefHeight="70.0" styleClass="nav-button" text="Subscription" />
-            <Button fx:id="gymButton" prefHeight="70.0" styleClass="nav-button" text="Gym" />
+            <Button fx:id="subscriptionButton" onAction="#goToSubscription" prefHeight="70.0" styleClass="nav-button" text="Subscription" />
+            <Button fx:id="gymButton" onAction="#goToGym" prefHeight="70.0" styleClass="nav-button" text="Gym" />
             <Pane HBox.hgrow="ALWAYS" />
             <Button styleClass="login-button" text="Login" />
         </HBox>
@@ -42,7 +42,7 @@
 
                     <StackPane alignment="CENTER_RIGHT">
                         <DatePicker fx:id="datePicker" promptText="Choose Date..." styleClass="booking-input" />
-                        <ImageView fx:id="calendaricon" onMouseClicked="#openCalendar" fitHeight="20" fitWidth="20" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fx:id="calendaricon" fitHeight="20" fitWidth="20" onMouseClicked="#openCalendar" pickOnBounds="true" preserveRatio="true">
                             <image>
                                 <Image url="@../../../icons/calendar.png" />
                             </image>
@@ -53,8 +53,8 @@
                     </StackPane>
 
                     <StackPane alignment="CENTER_RIGHT">
-                        <ComboBox fx:id="centerSearchField" prefWidth="250.0" promptText="Search center here..." style="-fx-prompt-text-fill: white; -fx-text-fill: white;" styleClass="booking-input" />
-                        <ImageView fx:id="dropdownicon" onMouseClicked="#showCombobox" fitHeight="20" fitWidth="20" pickOnBounds="true" preserveRatio="true">
+                        <ComboBox fx:id="centerSearchField" editable="true" prefWidth="250.0" promptText="Search center here..." style="-fx-prompt-text-fill: white; -fx-text-fill: white;" styleClass="booking-input" />
+                        <ImageView fx:id="dropdownicon" fitHeight="20" fitWidth="20" onMouseClicked="#showCombobox" pickOnBounds="true" preserveRatio="true">
                             <image>
                                 <Image url="@../../../icons/arrow.png" />
                             </image>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane stylesheets="@subscription.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.padelfrontend.SubscriptionController">
+
+
+    <!-- Navigation Bar -->
+    <HBox fx:id="navbar" alignment="CENTER_LEFT" spacing="30" styleClass="navbar" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <Label styleClass="logo" text="Padel Gym" />
+        <Button fx:id="homeButton" onAction="#goToHome" prefHeight="70.0" styleClass="nav-button" text="Home" />
+        <Button fx:id="bookingButton" onAction="#goToBooking" prefHeight="70.0" styleClass="nav-button" text="Booking" />
+        <Button fx:id="subscriptionButton" prefHeight="70.0" styleClass="nav-button" text="Subscription" />
+        <Button fx:id="gymButton" onAction="#goToGym" prefHeight="70.0" styleClass="nav-button" text="Gym" />
+
+        <Pane HBox.hgrow="ALWAYS" />
+        <Button styleClass=" login-button" text="Login" />
+    </HBox>
+
+    <!-- Main Content -->
+    <VBox alignment="CENTER" spacing="20" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="80">
+        <!-- Page Title -->
+        <Text styleClass="page-title" text="Choose Your Subscription Plan" />
+
+        <!-- Duration Selection -->
+        <HBox fx:id="durationSelector" alignment="CENTER" spacing="10" styleClass="duration-selector">
+            <Button fx:id="oneMonthButton" onAction="#selectOneMonth" styleClass="duration-button" text="1 Month" />
+            <Button fx:id="threeMonthsButton" onAction="#selectThreeMonths" styleClass="duration-button" text="3 Months" />
+            <Button fx:id="sixMonthsButton" onAction="#selectSixMonths" styleClass="duration-button" text="6 Months" />
+            <Button fx:id="oneYearButton" onAction="#selectOneYear" styleClass="duration-button" text="1 Year" />
+        </HBox>
+
+        <!-- Subscription Plans Container -->
+        <FlowPane fx:id="plansContainer" alignment="CENTER" hgap="20" styleClass="plans-container" vgap="20" />
+    </VBox>
+</AnchorPane>

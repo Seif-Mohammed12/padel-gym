@@ -13,10 +13,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.json.JSONArray;
@@ -51,7 +53,10 @@ public class GymController {
 
     // Constants
     private static final String GYM_CLASSES_FILE = "padelbackend/gym-classes.json";
-    private static final String PLACEHOLDER_IMAGE_PATH = "/images/placeholder.jpg";
+    private static final String PLACEHOLDER_IMAGE_PATH = "/images/yoga.jpg";
+    private static final String CLASS_ICON_PATH = "/icons/dumbbell.png"; // Add this icon to your resources
+    private static final String BOOKING_ICON_PATH = "/icons/booking.png";
+    private static final String WAITLIST_ICON_PATH = "/icons/hourglass.png";
     private static final int SERVER_PORT = 8080;
     private static final String SERVER_HOST = "localhost";
     private static final int MEMBER_ID = 1; // Placeholder for member ID
@@ -139,7 +144,7 @@ public class GymController {
     }
 
     /**
-     * Creates a UI card for a gym class with image, details, and action button.
+     * Creates a visually appealing UI card for a gym class with image, details, and action button.
      *
      * @param gymClass The JSON object representing the gym class.
      * @return A VBox containing the gym class card.
@@ -156,25 +161,45 @@ public class GymController {
         boolean isFull = currentParticipants >= capacity;
 
         // Create the card container
-        VBox card = new VBox(10);
+        VBox card = new VBox(15);
         card.getStyleClass().add("gym-class-card");
-        card.setPadding(new Insets(15));
+        card.setPadding(new Insets(20));
         card.setPrefWidth(300);
-        card.setMinHeight(200);
+        card.setMinHeight(350);
         card.setAlignment(Pos.TOP_CENTER);
 
         // Add the class image
         ImageView imageView = createClassImage(imagePath);
         imageView.getStyleClass().add("gym-class-image");
 
+        // Header with icon and name
+        HBox header = new HBox(8);
+        header.setAlignment(Pos.CENTER_LEFT);
+
+        ImageView icon = new ImageView(new Image(getClass().getResourceAsStream(CLASS_ICON_PATH)));
+        icon.setFitWidth(24);
+        icon.setFitHeight(24);
+
+        Label nameLabel = new Label(name);
+        nameLabel.getStyleClass().add("gym-class-name");
+
+        header.getChildren().addAll(icon, nameLabel);
+
         // Add class details
-        VBox details = createClassDetails(name, instructor, time, capacity, currentParticipants, waitlistSize, isFull);
+        VBox details = createClassDetails(instructor, time);
+
+        // Add capacity indicator
+        HBox capacityIndicator = createCapacityIndicator(capacity, currentParticipants);
+
+        // Add waitlist info
+        Label waitlistLabel = new Label(isFull ? "Waitlist: " + waitlistSize : "Waitlist: 0");
+        waitlistLabel.getStyleClass().add("gym-class-detail");
 
         // Add action button
         Button actionButton = createActionButton(isFull, name);
 
         // Assemble the card
-        card.getChildren().addAll(imageView, details, actionButton);
+        card.getChildren().addAll(imageView, header, details, capacityIndicator, waitlistLabel, actionButton);
 
         // Add hover effect to the card
         addCardHoverEffect(card);
@@ -183,7 +208,7 @@ public class GymController {
     }
 
     /**
-     * Creates an ImageView for the gym class with a circular clip.
+     * Creates an ImageView for the gym class with a rounded clip.
      *
      * @param imagePath The path to the class image.
      * @return An ImageView with the class image or a placeholder.
@@ -201,9 +226,11 @@ public class GymController {
             Image placeholder = new Image(getClass().getResourceAsStream(PLACEHOLDER_IMAGE_PATH));
             imageView.setImage(placeholder);
         }
-        imageView.setFitWidth(80);
-        imageView.setFitHeight(80);
-        Circle clip = new Circle(40, 40, 40); // Circular image
+        imageView.setFitWidth(260);
+        imageView.setFitHeight(150);
+        Rectangle clip = new Rectangle(260, 150);
+        clip.setArcWidth(20);
+        clip.setArcHeight(20);
         imageView.setClip(clip);
         return imageView;
     }
@@ -211,22 +238,13 @@ public class GymController {
     /**
      * Creates a VBox containing the gym class details.
      *
-     * @param name              The class name.
-     * @param instructor        The instructor's name.
-     * @param time              The class time.
-     * @param capacity          The class capacity.
-     * @param currentParticipants The number of current participants.
-     * @param waitlistSize      The size of the waitlist.
-     * @param isFull            Whether the class is full.
+     * @param instructor The instructor's name.
+     * @param time       The class time.
      * @return A VBox with the class details.
      */
-    private VBox createClassDetails(String name, String instructor, String time, int capacity,
-                                    int currentParticipants, int waitlistSize, boolean isFull) {
+    private VBox createClassDetails(String instructor, String time) {
         VBox details = new VBox(5);
-        details.setAlignment(Pos.CENTER);
-
-        Label nameLabel = new Label(name);
-        nameLabel.getStyleClass().add("gym-class-name");
+        details.setAlignment(Pos.CENTER_LEFT);
 
         Label instructorLabel = new Label("Instructor: " + instructor);
         instructorLabel.getStyleClass().add("gym-class-detail");
@@ -234,29 +252,86 @@ public class GymController {
         Label timeLabel = new Label("Time: " + time);
         timeLabel.getStyleClass().add("gym-class-detail");
 
-        Label capacityLabel = new Label("Capacity: " + currentParticipants + "/" + capacity);
+        details.getChildren().addAll(instructorLabel, timeLabel);
+        return details;
+    }
+
+    /**
+     * Creates a horizontal capacity indicator with a circular percentage and a progress bar.
+     *
+     * @param capacity          The total capacity of the class.
+     * @param currentParticipants The current number of participants.
+     * @return An HBox containing the capacity indicator.
+     */
+    private HBox createCapacityIndicator(int capacity, int currentParticipants) {
+        HBox capacityBox = new HBox(15);
+        capacityBox.setAlignment(Pos.CENTER_LEFT);
+
+        // Circular percentage indicator
+        StackPane indicator = new StackPane();
+        indicator.setAlignment(Pos.CENTER);
+
+        Circle outerCircle = new Circle(24);
+        outerCircle.getStyleClass().add("capacity-circle");
+
+        Circle innerCircle = new Circle(20);
+        innerCircle.getStyleClass().add("capacity-inner-circle");
+
+        double percentage = (double) currentParticipants / capacity;
+        Label percentageLabel = new Label(String.format("%.0f%%", percentage * 100));
+        percentageLabel.getStyleClass().add("capacity-label");
+
+        indicator.getChildren().addAll(outerCircle, innerCircle, percentageLabel);
+
+        // Progress bar with numeric label
+        VBox progressSection = new VBox(5);
+        progressSection.setAlignment(Pos.CENTER_LEFT);
+
+        Label capacityLabel = new Label(currentParticipants + "/" + capacity + " Participants");
         capacityLabel.getStyleClass().add("gym-class-detail");
-        if (isFull) {
-            capacityLabel.getStyleClass().add("capacity-full");
+
+        // Use JavaFX ProgressBar
+        ProgressBar progressBar = new ProgressBar(percentage);
+        progressBar.setPrefWidth(150);
+        progressBar.setPrefHeight(12);
+        progressBar.getStyleClass().add("capacity-progress");
+
+        // Dynamic styling based on capacity
+        if (percentage >= 1.0) {
+            progressBar.getStyleClass().add("capacity-full");
+        } else if (percentage >= 0.75) {
+            progressBar.getStyleClass().add("capacity-warning");
         }
 
-        Label waitlistLabel = new Label(isFull ? "Waitlist: " + waitlistSize : "Waitlist: 0");
-        waitlistLabel.getStyleClass().add("gym-class-detail");
+        progressSection.getChildren().addAll(capacityLabel, progressBar);
 
-        details.getChildren().addAll(nameLabel, instructorLabel, timeLabel, capacityLabel, waitlistLabel);
-        return details;
+        capacityBox.getChildren().addAll(indicator, progressSection);
+        return capacityBox;
     }
 
     /**
      * Creates the action button ("Book" or "Join Waitlist") for the gym class.
      *
-     * @param isFull Whether the class is full.
+     * @param isFull    Whether the class is full.
      * @param className The name of the class.
      * @return A Button with the appropriate action.
      */
     private Button createActionButton(boolean isFull, String className) {
         Button actionButton = new Button(isFull ? "Join Waitlist" : "Book");
         actionButton.getStyleClass().add("gym-action-button");
+
+        if( isFull ) {
+            ImageView arrowIcon = new ImageView(new Image(getClass().getResourceAsStream(WAITLIST_ICON_PATH)));
+            arrowIcon.setFitWidth(16);
+            arrowIcon.setFitHeight(16);
+            actionButton.setGraphic(arrowIcon);
+        }
+        else{
+            ImageView arrowIcon = new ImageView(new Image(getClass().getResourceAsStream(BOOKING_ICON_PATH)));
+            arrowIcon.setFitWidth(16);
+            arrowIcon.setFitHeight(16);
+            actionButton.setGraphic(arrowIcon);
+        }
 
         actionButton.setOnAction(e -> handleBookingAction(isFull, className));
         return actionButton;
@@ -283,7 +358,7 @@ public class GymController {
     /**
      * Handles the booking action (book or join waitlist) when the action button is clicked.
      *
-     * @param isFull Whether the class is full.
+     * @param isFull    Whether the class is full.
      * @param className The name of the class.
      */
     private void handleBookingAction(boolean isFull, String className) {
@@ -348,7 +423,7 @@ public class GymController {
     /**
      * Shows an alert dialog with the specified title and message.
      *
-     * @param title The title of the alert.
+     * @param title   The title of the alert.
      * @param message The message to display.
      */
     private void showAlert(String title, String message) {
@@ -372,29 +447,21 @@ public class GymController {
      */
     @FXML
     private void goToBooking() {
-        navigateToPage("home.fxml", 1);
+        navigateToPage("BookingPage.fxml", -1);
     }
 
     /**
-     * Navigates to the Subscription page (not implemented).
+     * Navigates to the Subscription page with a slide transition.
      */
     @FXML
     private void goToSubscription() {
-        System.out.println("Subscription page navigation not implemented yet.");
-    }
-
-    /**
-     * Already on the Gym page, no navigation needed.
-     */
-    @FXML
-    private void goToGym() {
-        // No action needed
+        navigateToPage("subscription.fxml", -1);
     }
 
     /**
      * Navigates to the specified page with a slide transition.
      *
-     * @param fxmlFile The FXML file of the target page.
+     * @param fxmlFile  The FXML file of the target page.
      * @param direction The direction of the slide (-1 for left, 1 for right).
      */
     private void navigateToPage(String fxmlFile, int direction) {
