@@ -1,37 +1,230 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.layout.FlowPane?>
-<?import javafx.scene.layout.Pane?>
 
-<AnchorPane stylesheets="@gym.css" styleClass="root" xmlns="http://javafx.com/javafx/20" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.padelfrontend.GymController">
-    <!-- Navigation Bar -->
-    <HBox fx:id="navbar" alignment="CENTER_LEFT" spacing="30" styleClass="navbar" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
-        <Label styleClass="logo" text="Padel Gym" />
-        <Button fx:id="homeButton" onAction="#goToHome" prefHeight="70.0" styleClass="nav-button" text="Home" />
-        <Button fx:id="bookingButton" onAction="#goToBooking" prefHeight="70.0" styleClass="nav-button" text="Booking" />
-        <Button fx:id="subscriptionButton" onAction="#goToSubscription" prefHeight="70.0" styleClass="nav-button" text="Subscription" />
-        <Button fx:id="gymButton" prefHeight="70.0" styleClass="nav-button" text="Gym" />
-
-        <Pane HBox.hgrow="ALWAYS"/>
-        <Button styleClass="login-button" text="Login" />
+<?import javafx.scene.chart.PieChart?>
+<AnchorPane fx:id="rootPane" prefHeight="800.0" prefWidth="1280.0" styleClass="root" stylesheets="@gym.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.padelfrontend.GymController">
+    <!-- Navbar -->
+    <HBox fx:id="navbar" styleClass="navbar" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0">
+        <Button fx:id="homeButton"  styleClass="nav-button" text="Home" />
+        <Button fx:id="bookingButton"  styleClass="nav-button" text="Booking" />
+        <Button fx:id="subscriptionButton"  styleClass="nav-button" text="Subscription" />
+        <Button fx:id="gymButton" styleClass="nav-button active" text="Gym" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="logoutButton"  styleClass="login-button" text="Logout" />
     </HBox>
 
-    <!-- Main Content -->
-    <VBox fx:id="mainVBox" AnchorPane.topAnchor="70" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0">
-        <!-- Header Section with Tagline -->
-        <HBox styleClass="header-section" alignment="CENTER" style="-fx-padding: 30 0;">
-            <Label fx:id="tagline" text="Join the Movement" styleClass="tagline"/>
-        </HBox>
+    <!-- Scrollable Dashboard Content -->
+    <ScrollPane fitToWidth="true" style="-fx-background: transparent; " styleClass="main-scroll" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="70.0" VBox.vgrow="ALWAYS">
+        <VBox fillWidth="false" prefWidth="1265.0" spacing="40" styleClass="dashboard-wrapper">
+            <!-- Header -->
+            <Label styleClass="header-title" text="Gym Dashboard" />
 
-        <!-- Scrollable Grid for Gym Classes -->
-        <ScrollPane style="-fx-background-color: transparent; -fx-background: transparent;" fitToWidth="true">
-            <FlowPane fx:id="classesContainer" alignment="CENTER" hgap="20" vgap="20" style="-fx-padding: 30;"/>
-        </ScrollPane>
-    </VBox>
+            <!-- First Row (Progress and History) -->
+            <HBox spacing="40">
+                <!-- Left Column: Weekly Progress -->
+                <VBox fx:id="weeklyProgressVBox" prefWidth="600.0" spacing="15" styleClass="section-card">
+                    <Label styleClass="section-title" text="Weekly Progress" />
+                    <VBox fx:id="graphPlaceholder" prefHeight="200" styleClass="graph-placeholder">
+                        <PieChart fx:id="pieChart" prefHeight="200" prefWidth="200" />
+                        <Label styleClass="placeholder-text" text="[Graph Placeholder - Weekly Workout Frequency]" />
+                    </VBox>
+                </VBox>
+
+                <!-- Right Column: Workout History -->
+                <VBox prefWidth="600.0" spacing="15" styleClass="section-card">
+                    <Label styleClass="section-title" text="Workout History" />
+                    <TableView fx:id="historyTable" prefHeight="200" styleClass="workout-table">
+                        <columns>
+                            <TableColumn fx:id="dateColumn" prefWidth="100" text="Date" />
+                            <TableColumn fx:id="historyExerciseColumn" prefWidth="150" text="Exercise" />
+                            <TableColumn fx:id="historySetsColumn" prefWidth="60" text="Sets" />
+                            <TableColumn fx:id="historyRepsColumn" prefWidth="100" text="Reps" />
+                            <TableColumn fx:id="historyWeightColumn" prefWidth="100" text="Weight (kg)" />
+                        </columns>
+                  <columnResizePolicy>
+                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                  </columnResizePolicy>
+                    </TableView>
+                </VBox>
+            </HBox>
+
+            <!-- Second Row (Activities and Book a Class) -->
+            <HBox spacing="40">
+                <!-- Left Column: Activities -->
+                <VBox prefHeight="500.0" prefWidth="350.0" spacing="15" styleClass="section-card">
+                    <HBox styleClass="section-header">
+                        <Label styleClass="section-title" text="Activities" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button styleClass="add-button" text="+" />
+                    </HBox>
+                    <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" prefHeight="350.0" prefWidth="288.0" styleClass="activity-scroll">
+                        <VBox spacing="15" styleClass="activities-list">
+                            <HBox spacing="10" styleClass="activity-item">
+                                <Label styleClass="activity-icon" />
+                                <VBox styleClass="activity-info">
+                                    <Label styleClass="activity-name" text="Squat" />
+                                    <Label styleClass="activity-sets" text="5 sets" />
+                                </VBox>
+                                <Region HBox.hgrow="ALWAYS" />
+                                <CheckBox styleClass="activity-checkbox" />
+                            </HBox>
+                            <HBox spacing="10" styleClass="activity-item">
+                                <Label styleClass="activity-icon" />
+                                <VBox styleClass="activity-info">
+                                    <Label styleClass="activity-name" text="Bicep Curl" />
+                                    <Label styleClass="activity-sets" text="3 sets" />
+                                </VBox>
+                                <Region HBox.hgrow="ALWAYS" />
+                                <CheckBox selected="true" styleClass="activity-checkbox" />
+                            </HBox>
+                            <HBox spacing="10" styleClass="activity-item">
+                                <Label styleClass="activity-icon" />
+                                <VBox styleClass="activity-info">
+                                    <Label styleClass="activity-name" text="Running" />
+                                    <Label styleClass="activity-sets" text="10 min" />
+                                </VBox>
+                                <Region HBox.hgrow="ALWAYS" />
+                                <CheckBox styleClass="activity-checkbox" />
+                            </HBox>
+                        </VBox>
+                    </ScrollPane>
+                </VBox>
+                <!-- Left Column: Activity Details -->
+                <VBox prefHeight="500.0" prefWidth="350.0" spacing="15" styleClass="section-card">
+                    <HBox spacing="10">
+                        <Label styleClass="activity-icon-large" />
+                        <VBox spacing="5">
+                            <Label styleClass="activity-name-large" text="Bicep Curl" />
+                            <Label styleClass="activity-sets-large" text="3 sets" />
+                        </VBox>
+                    </HBox>
+                    <HBox spacing="15" styleClass="activity-stats">
+                        <VBox spacing="5">
+                            <Button styleClass="activity-stat-button" text="12x" />
+                            <Button styleClass="activity-stat-button" text="20 kg" />
+                        </VBox>
+                        <VBox spacing="5">
+                            <Button styleClass="activity-stat-button" text="10x" />
+                            <Button styleClass="activity-stat-button" text="22 kg" />
+                        </VBox>
+                        <VBox spacing="5">
+                            <Button styleClass="activity-stat-button" text="8x" />
+                            <Button styleClass="activity-stat-button" text="24 kg" />
+                        </VBox>
+                        <Button styleClass="add-button" text="+" />
+                    </HBox>
+                    <TextArea fx:id="activityNotes" prefHeight="350.0" promptText="Add note..." styleClass="notes-area" />
+                </VBox>
+            <VBox prefHeight="500.0" prefWidth="350.0" spacing="15" styleClass="section-card">
+               <children>
+                  <HBox styleClass="section-header">
+                     <children>
+                        <Label styleClass="section-title" text="Days" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button styleClass="add-button" text="+" />
+                     </children>
+                  </HBox>
+                  <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" prefHeight="350.0" prefWidth="288.0" styleClass="activity-scroll">
+                     <content>
+                        <VBox spacing="15" styleClass="activities-list">
+                           <children>
+                              <HBox spacing="10" styleClass="activity-item">
+                                 <children>
+                                    <VBox styleClass="activity-info">
+                                       <children>
+                                          <Label styleClass="activity-name" text="Day 1" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+                              <HBox spacing="10" styleClass="activity-item">
+                                 <children>
+                                    <VBox styleClass="activity-info">
+                                       <children>
+                                          <Label styleClass="activity-name" text="Day 2" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+                              <HBox spacing="10" styleClass="activity-item">
+                                 <children>
+                                    <VBox styleClass="activity-info">
+                                       <children>
+                                          <Label styleClass="activity-name" text="Day 3" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </content>
+                  </ScrollPane>
+               </children>
+            </VBox>
+            </HBox>
+
+            <!-- Third Row (Activity Details and Book a Trainer) -->
+            <HBox spacing="40">
+
+                <!-- Right Column: Book a Trainer -->
+                <VBox prefWidth="550.0" spacing="15" styleClass="section-card">
+                    <Label styleClass="section-title" text="Book a Trainer" />
+                    <ScrollPane fitToHeight="true" prefHeight="200.0" prefWidth="490.0" styleClass="horizontal-scroll" vbarPolicy="NEVER">
+                        <HBox prefWidth="570.0" spacing="15" styleClass="card-grid">
+                            <VBox styleClass="trainer-card">
+                                <Label styleClass="card-title" text="Trainer 1" />
+                                <Label styleClass="card-detail" text="10:00 AM" />
+                                <Button styleClass="book-button" text="Book Now" />
+                            </VBox>
+                            <VBox styleClass="trainer-card">
+                                <Label styleClass="card-title" text="Trainer 2" />
+                                <Label styleClass="card-detail" text="2:00 PM" />
+                                <Button styleClass="book-button" text="Book Now" />
+                            </VBox>
+                            <VBox styleClass="trainer-card">
+                                <Label styleClass="card-title" text="Trainer 3" />
+                                <Label styleClass="card-detail" text="4:00 PM" />
+                                <Button styleClass="book-button" text="Book Now" />
+                            </VBox>
+                        </HBox>
+                    </ScrollPane>
+                </VBox>
+
+                <!-- Right Column: Book a Class -->
+                <VBox prefWidth="550.0" spacing="15" styleClass="section-card">
+                    <Label styleClass="section-title" text="Book a Class" />
+                    <ScrollPane fitToHeight="true" prefHeight="200.0" styleClass="horizontal-scroll" vbarPolicy="NEVER">
+                        <HBox spacing="15" styleClass="card-grid">
+                            <VBox styleClass="class-card">
+                                <Label styleClass="card-title" text="Yoga" />
+                                <Label styleClass="card-detail" text="9:00 AM" />
+                                <Button styleClass="book-button" text="Book Now" />
+                            </VBox>
+                            <VBox styleClass="class-card">
+                                <Label styleClass="card-title" text="Padel" />
+                                <Label styleClass="card-detail" text="11:00 AM" />
+                                <Button styleClass="book-button" text="Book Now" />
+                            </VBox>
+                            <VBox styleClass="class-card">
+                                <Label styleClass="card-title" text="Spin" />
+                                <Label styleClass="card-detail" text="1:00 PM" />
+                                <Button styleClass="book-button" text="Book Now" />
+                            </VBox>
+                        </HBox>
+                    </ScrollPane>
+                </VBox>
+            </HBox>
+        </VBox>
+    </ScrollPane>
 </AnchorPane>
