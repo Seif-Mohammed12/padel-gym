@@ -5,8 +5,10 @@ AnchorPane {
 
 /* Navigation Bar Styling */
 .navbar {
-    -fx-background-color: rgba(15, 15, 30, 0.95);
-    -fx-padding: 0 40;
+    -fx-background-color: rgba(0, 0, 0, 0.7);
+    -fx-padding: 10 40;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-width: 0 0 1 0;
 }
 
 .logo {
@@ -19,18 +21,14 @@ AnchorPane {
 .nav-button {
     -fx-background-color: transparent;
     -fx-text-fill: white;
-    -fx-font-size: 20px;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-font-family: "Arial";
     -fx-cursor: hand;
-
 }
 
 .nav-button:hover {
     -fx-text-fill: #3a82f7;
-    -fx-background-color: rgba(30, 30, 50, 1.0);
-
-    -fx-background-radius: 10;
 }
 
 .nav-button:pressed{
@@ -40,30 +38,21 @@ AnchorPane {
 }
 
 .nav-button.active {
-
     -fx-text-fill: #4CAF50; /* White text color */
 }
 
 .login-button {
-    -fx-background-color: linear-gradient(to right, #1f1f2e, #2c2c3d);
-    -fx-text-fill: #e0e0e0;
+    -fx-background-color: linear-gradient(to bottom, #3a82f7, #1e57f1);
+    -fx-text-fill: white;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-padding: 10 20;
-    -fx-background-radius: 12;
-    -fx-border-radius: 12;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 10, 0.3, 0, 3);
+    -fx-background-radius: 10;
     -fx-cursor: hand;
-    -fx-transition: all 0.3s ease;
-    -fx-border-color: #3a3a50;
-    -fx-border-width: 1;
 }
 
 .login-button:hover {
-    -fx-scale-x: 1.08;
-    -fx-scale-y: 1.08;
-    -fx-effect: dropshadow(gaussian, rgba(60, 60, 80, 0.6), 12, 0.5, 0, 4);
-    -fx-background-color: linear-gradient(to right, #29293e, #35354a);
+    -fx-background-color: linear-gradient(to bottom, #2c6ae4, #174dc6);
 }
 
 
@@ -187,4 +176,14 @@ AnchorPane {
     -fx-background-color: #4A5A5B;
     -fx-text-fill: #B0BEC5;
     -fx-opacity: 0.8;
+}
+.subscribed-button {
+    -fx-background-color: #28a745; /* Green for subscribed */
+    -fx-background-radius: 20;
+    -fx-text-fill: #12171A;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial";
+    -fx-padding: 8 20;
+    -fx-opacity: 0.7; /* Slightly faded to indicate disabled */
 }

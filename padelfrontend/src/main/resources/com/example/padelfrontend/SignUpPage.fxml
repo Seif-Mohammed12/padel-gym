@@ -13,19 +13,18 @@
 <?import javafx.scene.layout.VBox?>
 
 <AnchorPane prefHeight="1080.0" prefWidth="1920.0" styleClass="root" stylesheets="@SignUpPage.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.padelfrontend.SignUpController">
-
-    <VBox alignment="CENTER" layoutY="9.0" maxHeight="620" maxWidth="450" spacing="25" styleClass="glass-card" AnchorPane.leftAnchor="560.0" AnchorPane.topAnchor="100.0">
+    <VBox alignment="CENTER" layoutX="571.2" layoutY="9.0" maxHeight="1000.0" maxWidth="450" prefHeight="800.0" prefWidth="422.0" spacing="20.0" styleClass="glass-card" AnchorPane.leftAnchor="571.0" AnchorPane.topAnchor="40.0">
         <Label fx:id="title" text="Create an Account" textAlignment="CENTER" />
 
-        <VBox alignment="CENTER" spacing="15" styleClass="form-container">
+        <VBox alignment="CENTER" spacing="8.0" styleClass="form-container">
             <!-- First Name Field -->
             <HBox prefHeight="10.0" prefWidth="200.0">
                 <children>
                     <Label styleClass="label" text="First Name" />
                 </children>
             </HBox>
-            <StackPane alignment="CENTER_LEFT" styleClass="input-wrapper">
-                <ImageView fitHeight="20" fitWidth="20" translateX="12" translateY="1">
+            <StackPane alignment="CENTER_LEFT" prefWidth="341.0" styleClass="input-wrapper">
+                <ImageView fitHeight="24" fitWidth="24" translateX="12" translateY="0">
                     <image>
                         <Image url="@../../../icons/user.png" />
                     </image>
@@ -40,7 +39,7 @@
                 </children>
             </HBox>
             <StackPane alignment="CENTER_LEFT" styleClass="input-wrapper">
-                <ImageView fitHeight="20" fitWidth="20" translateX="12" translateY="1">
+                <ImageView fitHeight="24" fitWidth="24" translateX="12" translateY="0">
                     <image>
                         <Image url="@../../../icons/user.png" />
                     </image>
@@ -55,12 +54,27 @@
                 </children>
             </HBox>
             <StackPane alignment="CENTER_LEFT" styleClass="input-wrapper">
-                <ImageView fitHeight="20" fitWidth="20" translateX="12" translateY="1">
+                <ImageView fitHeight="24" fitWidth="24" translateX="12" translateY="0">
                     <image>
                         <Image url="@../../../icons/user.png" />
                     </image>
                 </ImageView>
                 <TextField fx:id="usernameField" promptText="Enter username" styleClass="text-field padded-text-field" />
+            </StackPane>
+
+            <!-- Phone Number Field -->
+            <HBox prefHeight="10.0" prefWidth="200.0">
+                <children>
+                    <Label styleClass="label" text="Phone Number" />
+                </children>
+            </HBox>
+            <StackPane alignment="CENTER_LEFT" styleClass="input-wrapper">
+                <ImageView fitHeight="24" fitWidth="24" translateX="12" translateY="0">
+                    <image>
+                        <Image url="@../../../icons/phone.png" />
+                    </image>
+                </ImageView>
+                <TextField fx:id="phoneNumberField" promptText="Enter phone number" styleClass="text-field padded-text-field" />
             </StackPane>
 
             <!-- Password Field -->
@@ -70,14 +84,14 @@
                 </children>
             </HBox>
             <StackPane alignment="CENTER_LEFT" styleClass="input-wrapper">
-                <ImageView fitHeight="20" fitWidth="20" translateX="12" translateY="0">
+                <ImageView fitHeight="24" fitWidth="24" translateX="12" translateY="0">
                     <image>
                         <Image url="@../../../icons/padlock.png" />
                     </image>
                 </ImageView>
                 <PasswordField fx:id="passwordField" promptText="Enter password" styleClass="text-field padded-text-field" />
                 <TextField fx:id="visiblePasswordField" managed="false" promptText="Enter password" styleClass="text-field padded-text-field" visible="false" />
-                <ImageView fx:id="togglePasswordIcon" fitHeight="20" fitWidth="20" onMouseClicked="#togglePasswordVisibility" style="-fx-cursor: hand;" translateX="310" />
+                <ImageView fx:id="togglePasswordIcon" fitHeight="24" fitWidth="24" onMouseClicked="#togglePasswordVisibility" style="-fx-cursor: hand;" translateX="310" translateY="0" />
             </StackPane>
 
             <!-- Confirm Password Field -->
@@ -87,14 +101,14 @@
                 </children>
             </HBox>
             <StackPane alignment="CENTER_LEFT" styleClass="input-wrapper">
-                <ImageView fitHeight="20" fitWidth="20" translateX="12" translateY="0">
+                <ImageView fitHeight="24" fitWidth="24" translateX="12" translateY="0">
                     <image>
                         <Image url="@../../../icons/padlock.png" />
                     </image>
                 </ImageView>
                 <PasswordField fx:id="confirmPasswordField" promptText="Confirm password" styleClass="text-field padded-text-field" />
                 <TextField fx:id="visibleConfirmPasswordField" managed="false" promptText="Confirm password" styleClass="text-field padded-text-field" visible="false" />
-
+                <ImageView fx:id="toggleConfirmPasswordIcon" fitHeight="24" fitWidth="24" onMouseClicked="#togglePasswordVisibility" style="-fx-cursor: hand;" translateX="310" translateY="0" />
             </StackPane>
 
             <!-- Sign-Up Button -->

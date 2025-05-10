@@ -19,13 +19,14 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.function.UnaryOperator;
 
 public class SignUpController {
 
     @FXML
     private TextField usernameField;
     @FXML
-    private TextField emailField;
+    private TextField phoneNumberField;
     @FXML
     private PasswordField passwordField;
     @FXML
@@ -49,6 +50,34 @@ public class SignUpController {
     public void initialize() {
         // Set the initial icon to 'hidden' for both fields
         togglePasswordIcon.setImage(new Image(getClass().getResourceAsStream("/icons/hidden.png")));
+
+        phoneNumberField.setText("+20");
+        enforcePhoneNumberPrefix();
+    }
+
+    private void enforcePhoneNumberPrefix() {
+        // TextFormatter to enforce +20 prefix
+        UnaryOperator<TextFormatter.Change> filter = change -> {
+            String newText = change.getControlNewText();
+            // Allow empty field or +20 followed by up to 10 digits
+            if (newText.isEmpty() || newText.equals("+20") || newText.matches("\\+20\\d{0,10}")) {
+                return change;
+            }
+            // Block changes that remove or alter +20 prefix
+            if (!newText.startsWith("+20")) {
+                return null;
+            }
+            return change;
+        };
+        TextFormatter<String> formatter = new TextFormatter<>(filter);
+        phoneNumberField.setTextFormatter(formatter);
+
+        // Listener to revert to +20 if field is cleared
+        phoneNumberField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.startsWith("+20")) {
+                phoneNumberField.setText("+20");
+            }
+        });
     }
 
     @FXML
@@ -95,30 +124,35 @@ public class SignUpController {
     @FXML
     private void handleSignUpButton() {
         String firstName = firstNameField.getText().trim();
+        firstName = firstName.substring(0, 1).toUpperCase() + firstName.substring(1);
         String lastName = lastNameField.getText().trim();
+        lastName = lastName.substring(0, 1).toUpperCase() + lastName.substring(1);
         String username = usernameField.getText().trim();
-        String password = isPasswordVisible
-                ? visiblePasswordField.getText().trim()
-                : passwordField.getText().trim();
-        String confirmPassword = confirmPasswordField.getText().trim();
+        String phoneNumber = phoneNumberField.getText().trim();
+        String password = isPasswordVisible ? visiblePasswordField.getText().trim() : passwordField.getText().trim();
+        String confirmPassword = isPasswordVisible ? visibleConfirmPasswordField.getText().trim() : confirmPasswordField.getText().trim();
 
-        if (firstName.isEmpty() || lastName.isEmpty() || username.isEmpty() || password.isEmpty()
-                || confirmPassword.isEmpty()) {
-            responseLabel.setText("Please fill all fields");
+        // Client-side validation
+        if (firstName.isEmpty() || lastName.isEmpty() || username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+            responseLabel.setText("Please fill all required fields (phone number is optional)");
             responseLabel.getStyleClass().remove("success");
             return;
         }
-
         if (!password.equals(confirmPassword)) {
             responseLabel.setText("Passwords do not match");
             responseLabel.getStyleClass().remove("success");
             return;
         }
 
-        sendSignUpRequest(firstName, lastName, username, password);
+        // Send empty phoneNumber if only +20 is present
+        if (phoneNumber.equals("+20")) {
+            phoneNumber = "";
+        }
+
+        sendSignUpRequest(firstName, lastName, username, phoneNumber, password);
     }
 
-    private void sendSignUpRequest(String firstName, String lastName, String username, String password) {
+    private void sendSignUpRequest(String firstName, String lastName, String username, String phoneNumber, String password) {
         new Thread(() -> {
             try {
                 Socket socket = new Socket("localhost", 8080);
@@ -131,7 +165,9 @@ public class SignUpController {
                 request.put("firstName", firstName);
                 request.put("lastName", lastName);
                 request.put("username", username);
+                request.put("phoneNumber", phoneNumber);
                 request.put("password", password);
+                request.put("role", "user");
 
                 // Convert to string and send
                 String requestString = request.toString();

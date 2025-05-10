@@ -5,29 +5,48 @@
 #include <queue>
 #include <unordered_map>
 #include <ctime>
-#include <fstream>
+#include "include/json.hpp"
 
-using namespace std;
+using json = nlohmann::json;
 
-// History node for subscription history
 struct SubscriptionHistoryNode {
-    string planName;
-    string duration;
+    std::string planName;
+    std::string duration;
     time_t startDate;
     time_t expiryDate;
     double price;
     SubscriptionHistoryNode* next;
 
-    SubscriptionHistoryNode(string plan, string dur, time_t start, time_t expiry, double p)
-        : planName(plan), duration(dur), startDate(start), expiryDate(expiry), price(p), next(nullptr) {}
+    SubscriptionHistoryNode(std::string plan, std::string dur, time_t start, time_t expiry, double p)
+            : planName(plan), duration(dur), startDate(start), expiryDate(expiry), price(p), next(nullptr) {}
+
+    json toJson() const {
+        return {
+                {"planName", planName},
+                {"duration", duration},
+                {"startDate", static_cast<long long>(startDate)},
+                {"expiryDate", static_cast<long long>(expiryDate)},
+                {"price", price}
+        };
+    }
+
+    static SubscriptionHistoryNode* fromJson(const json& j) {
+        auto* node = new SubscriptionHistoryNode(
+                j.at("planName").get<std::string>(),
+                j.at("duration").get<std::string>(),
+                static_cast<time_t>(j.at("startDate").get<long long>()),
+                static_cast<time_t>(j.at("expiryDate").get<long long>()),
+                j.at("price").get<double>()
+        );
+        return node;
+    }
 };
 
-// Simple Subscription class
 class Subscription {
 private:
-    int memberId;
-    string planName;
-    string duration;
+    std::string memberId; // Changed from int to string
+    std::string planName;
+    std::string duration;
     time_t startDate;
     time_t expiryDate;
     double price;
@@ -35,118 +54,67 @@ private:
     SubscriptionHistoryNode* historyHead;
 
 public:
-    Subscription(int id, string plan, string dur, double p) {
-        memberId = id;
-        planName = plan;
-        duration = dur;
-        price = p;
-        startDate = time(nullptr);
-        isActive = true;
-        historyHead = nullptr;
+    Subscription(const std::string& id, std::string plan, std::string dur, double p);
+    Subscription(const std::string& id, std::string plan, std::string dur, time_t start, time_t expiry, double p, bool active);
 
-        // Calculate expiry date based on duration
-        int months = 1;
-        if (dur == "3_months") months = 3;
-        else if (dur == "6_months") months = 6;
-        else if (dur == "1_year") months = 12;
-
-        expiryDate = startDate + (months * 30 * 24 * 60 * 60);
-    }
-
-    // Getters
-    int getMemberId() const { return memberId; }
-    string getPlanName() const { return planName; }
-    string getDuration() const { return duration; }
+    std::string getMemberId() const { return memberId; }
+    std::string getPlanName() const { return planName; }
+    std::string getDuration() const { return duration; }
     time_t getStartDate() const { return startDate; }
     time_t getExpiryDate() const { return expiryDate; }
     double getPrice() const { return price; }
     bool getIsActive() const { return isActive; }
     SubscriptionHistoryNode* getHistoryHead() const { return historyHead; }
 
-    bool isExpired() const {
-        return time(nullptr) > expiryDate;
-    }
+    bool isExpired() const;
+    void addToHistory(std::string plan, std::string dur, time_t start, time_t expiry, double p);
+    void renew(std::string newPlan, std::string newDuration, double newPrice);
 
-    void addToHistory(string plan, string dur, time_t start, time_t expiry, double p) {
-        SubscriptionHistoryNode* newNode = new SubscriptionHistoryNode(plan, dur, start, expiry, p);
-        newNode->next = historyHead;
-        historyHead = newNode;
-    }
-
-    void renew(string newPlan, string newDuration, double newPrice) {
-        // Add current state to history
-        addToHistory(planName, duration, startDate, expiryDate, price);
-
-        // Update current state
-        planName = newPlan;
-        duration = newDuration;
-        price = newPrice;
-        startDate = time(nullptr);
-
-        // Calculate new expiry date
-        int months = 1;
-        if (newDuration == "3_months") months = 3;
-        else if (newDuration == "6_months") months = 6;
-        else if (newDuration == "1_year") months = 12;
-
-        expiryDate = startDate + (months * 30 * 24 * 60 * 60);
-    }
+    json toJson() const;
+    static Subscription fromJson(const json& j);
 };
 
-// Notification class
 class Notification {
 private:
-    int memberId;
-    string message;
+    std::string memberId; // Already string, but ensure consistency
+    std::string message;
     time_t expiryDate;
 
 public:
-    Notification(int id, string msg, time_t expiry)
-        : memberId(id), message(msg), expiryDate(expiry) {}
+    Notification(const std::string& id, std::string msg, time_t expiry);
 
-    int getMemberId() const { return memberId; }
-    string getMessage() const { return message; }
+    std::string getMemberId() const { return memberId; }
+    std::string getMessage() const { return message; }
     time_t getExpiryDate() const { return expiryDate; }
+
+    json toJson() const;
+    static Notification fromJson(const json& j);
 };
 
-// Main Subscription Manager class
 class SubscriptionManager {
 private:
-    vector<Subscription> subscriptions;
-    unordered_map<int, int> memberIndexMap;
-    queue<Notification> notificationQueue;
-    string subscriptionsFile = "subscriptions.txt";
+    std::vector<Subscription> subscriptions;
+    std::unordered_map<std::string, int> memberIndexMap; // Changed key to string
+    std::queue<Notification> notificationQueue;
+    const std::string subscriptionsFile = "active-subscriptions.json"; // Changed to separate file
 
-    void updateMemberIndex() {
-        memberIndexMap.clear();
-        for (int i = 0; i < subscriptions.size(); ++i) {
-            memberIndexMap[subscriptions[i].getMemberId()] = i;
-        }
-    }
+    void updateMemberIndex();
 
 public:
-    // Vector operations
     void addSubscription(const Subscription& sub);
-    void removeSubscription(int memberId);
-
-    // Hash table operations
-    Subscription* findSubscription(int memberId);
-
-    // Queue operations
+    void removeSubscription(const std::string& memberId); // Updated to string
+    Subscription* findSubscription(const std::string& memberId); // Updated to string
     void addNotification(const Notification& notif);
     void processNotifications();
     void checkRenewalReminders();
-
-    // Print operations
     void printAllSubscriptions();
-    void printSubscriptionHistory(int memberId);
+    void printSubscriptionHistory(const std::string& memberId);
     void printExpiringSubscriptions(int days);
-
-    // File operations
     void saveToFile();
     void loadFromFile();
+    std::vector<Subscription> getExpiringSubscriptions(int days);
+    void cancelSubscription(const std::string& memberId); // Updated to string
 
-    // Utility functions
-    vector<Subscription> getExpiringSubscriptions(int days);
-    void cancelSubscription(int memberId);
-}; 
+    json getSubscriptionsAsJson() const;
+    void loadSubscriptionsFromJson(const json& data);
+};

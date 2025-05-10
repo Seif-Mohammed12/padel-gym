@@ -1,309 +1,327 @@
 package com.example.padelfrontend;
 
 import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
-import javafx.beans.value.ChangeListener;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.application.Platform;
-import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.TextField;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.util.StringConverter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 
 /**
- * Controller for the Home page, handling navigation, date picker, and combo box interactions.
+ * Controller for the Home page, handling navigation and dynamic content loading.
  */
 public class HomeController {
 
-    @FXML
-    private DatePicker datePicker;
-    @FXML
-    private ComboBox<PadelCenter> centerSearchField;
-    @FXML
-    private ImageView dropdownicon;
-    @FXML
-    private ImageView calendaricon;
-    @FXML
-    private HBox navbar;
-    @FXML
-    private Button bookingButton;
-    @FXML
-    private Button subscriptionButton;
-    @FXML
-    private Button gymButton;
-    @FXML
-    private Button homeButton;
+    @FXML private BorderPane homeRoot;
+    @FXML private HBox navbar;
+    @FXML private Button homeButton;
+    @FXML private Button bookingButton;
+    @FXML private Button subscriptionButton;
+    @FXML private Button gymButton;
+    @FXML private Button loginButton;
+    @FXML private Button joinButton;
+    @FXML private Button viewPlansButton;
+    @FXML private HBox centersContainer;
+    @FXML private HBox classesContainer;
 
-    private boolean isComboBoxOpen = false;
-    private boolean isDatePickerOpen = false;
-    private boolean isUpdating = false;
-    private boolean justSelected = false; // Flag to track if an item was just selected
     private static final Duration TRANSITION_DURATION = Duration.millis(400);
-    private static final String PADEL_CENTERS_FILE = "padelbackend/padel-classes.json";
-    private ObservableList<PadelCenter> allCenters;
-    private long lastUpdateTime = 0;
-    private static final long DEBOUNCE_DELAY = 100;
-
-    /**
-     * A simple class to represent a padel center.
-     */
-    static class PadelCenter {
-        private final String name;
-
-        public PadelCenter(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
+    private static final String PLACEHOLDER_IMAGE_PATH = "/images/placeholder.png";
 
     @FXML
     public void initialize() {
-        configureDatePicker(datePicker, LocalDate.now());
-        setupIcons();
         setupNavbar();
         homeButton.getStyleClass().add("active");
-        setupCenterSearchField();
-        applyDropdownStyles();
+        updateLoginButton();
+        updateJoinButton();
+        fetchPadelCenters();
+        fetchGymClasses();
     }
 
     /**
-     * Sets up the centerSearchField ComboBox with auto-filtering and dropdown behavior.
+     * Updates the login button text based on the user's login state.
      */
-    private void setupCenterSearchField() {
-        // Load padel centers from JSON
-        allCenters = loadPadelCentersFromFile();
-        centerSearchField.setItems(allCenters);
+    private void updateLoginButton() {
+        AppContext context = AppContext.getInstance();
+        String originalText;
+        if (context.isLoggedIn()) {
+            String firstName = context.getFirstName();
+            originalText = "Welcome, " + firstName;
+            loginButton.setText(originalText);
+            loginButton.setMinWidth(150); // Set a minimum width to prevent layout shifts
+            // Add hover effects to change text to "Logout" when signed in
+            loginButton.setOnMouseEntered(e -> {
+                loginButton.setText("Logout");
+                loginButton.requestLayout(); // Force layout update to prevent text overlap
+            });
+            loginButton.setOnMouseExited(e -> {
+                loginButton.setText(originalText);
+                loginButton.requestLayout(); // Force layout update to ensure proper rendering
+            });
+        } else {
+            originalText = "Login";
+            loginButton.setText(originalText);
+            // Remove hover effects when not signed in to avoid interference
+            loginButton.setOnMouseEntered(null);
+            loginButton.setOnMouseExited(null);
+        }
+    }
 
-        // Set up the StringConverter to display only the center name using lambda
-        centerSearchField.setConverter(new StringConverter<>() {
-            @Override
-            public String toString(PadelCenter center) {
-                return center != null ? center.getName() : "";
-            }
+    /**
+     * Updates the join button based on the user's login state.
+     * If signed in, replaces "Join Now" with "My Account".
+     */
+    private void updateJoinButton() {
+        AppContext context = AppContext.getInstance();
+        if (context.isLoggedIn()) {
+            joinButton.setText("My Account");
+            joinButton.setOnAction(event -> goToMyAccount());
+            joinButton.getStyleClass().remove("join-button");
+            joinButton.getStyleClass().add("my-account-button");
+        } else {
+            joinButton.setText("Join Now");
+            joinButton.setOnAction(event -> goToSignUp());
+            joinButton.getStyleClass().remove("my-account-button");
+            joinButton.getStyleClass().add("join-button");
+        }
+    }
 
-            @Override
-            public PadelCenter fromString(String string) {
-                if (string == null || string.isEmpty()) return null;
-                return allCenters.stream()
-                        .filter(center -> center.getName().equalsIgnoreCase(string))
-                        .findFirst()
-                        .orElse(null);
-            }
-        });
-
-        // Add listener to filter items based on editor's text input with debouncing
-        centerSearchField.getEditor().textProperty().addListener((obs, oldValue, newValue) -> {
-            if (isUpdating) return; // Prevent recursive updates
-            long currentTime = System.currentTimeMillis();
-            if (currentTime - lastUpdateTime < DEBOUNCE_DELAY) return; // Debounce rapid updates
-            lastUpdateTime = currentTime;
-
-            isUpdating = true;
+    /**
+     * Fetches padel centers from the server and populates the centersContainer.
+     */
+    private void fetchPadelCenters() {
+        new Thread(() -> {
             try {
-                // Only update filtered items
-                if (newValue != null && !newValue.equals(oldValue)) {
-                    updateFilteredItems(newValue);
-                }
-            } catch (IllegalArgumentException e) {
-                System.err.println("Exception in textProperty listener: " + e.getMessage());
-                e.printStackTrace();
-                // Reset the editor to a safe state
-                Platform.runLater(() -> centerSearchField.getEditor().setText(oldValue != null ? oldValue : ""));
-            } finally {
-                isUpdating = false;
-            }
-        });
+                Socket socket = new Socket("localhost", 8080);
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-        // Track dropdown state and ensure sync
-        centerSearchField.showingProperty().addListener((obs, wasShowing, isShowing) -> {
-            isComboBoxOpen = isShowing;
-        });
+                // Send get_padel_centers request
+                JSONObject request = new JSONObject();
+                request.put("action", "get_padel_centers");
+                out.print(request.toString() + "\n");
+                out.flush();
 
-        // Track when an item is selected
-        centerSearchField.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> {
-            justSelected = newValue != null; // Set flag when an item is selected
-        });
-
-        // Add key event handler to handle typing after selection
-        centerSearchField.getEditor().setOnKeyTyped(event -> {
-            try {
-                TextField editor = centerSearchField.getEditor();
-
-                // Clear the current selection if this is the first key after selecting an item
-                if (justSelected) {
-                    centerSearchField.getSelectionModel().clearSelection();
-                    editor.setText(""); // Clear the editor to start fresh
-                    justSelected = false; // Reset the flag
+                // Read response
+                String response = in.readLine();
+                if (response == null) {
+                    throw new Exception("No response from server");
                 }
 
-                // Update filtered items and dropdown state after the key type
-                Platform.runLater(() -> {
-                    String currentText = editor.getText();
-                    if (currentText != null) {
-                        updateFilteredItems(currentText);
-                        if (!isComboBoxOpen && !currentText.isEmpty()) {
-                            centerSearchField.show();
-                            isComboBoxOpen = true;
-                        } else if (currentText.isEmpty() && isComboBoxOpen) {
-                            centerSearchField.hide();
-                            isComboBoxOpen = false;
-                        }
-                    }
-                });
-            } catch (IllegalArgumentException e) {
-                System.err.println("Exception in key typed handler: " + e.getMessage());
-                e.printStackTrace();
-                // Reset the editor to a safe state
-                Platform.runLater(() -> centerSearchField.getEditor().setText(""));
-            }
-        });
+                // Parse response
+                JSONObject jsonResponse = new JSONObject(response);
+                String status = jsonResponse.optString("status", "error");
+                if ("success".equals(status)) {
+                    JSONArray centers = jsonResponse.getJSONArray("data");
+                    Platform.runLater(() -> populatePadelCenters(centers));
+                } else {
+                    throw new Exception(jsonResponse.optString("message", "Failed to fetch padel centers"));
+                }
 
-        // Handle dropdown icon click to toggle the dropdown
-        dropdownicon.setOnMouseClicked(event -> {
-            if (centerSearchField.isShowing()) {
-                // Use Platform.runLater to ensure the hide action is processed after other events
+                socket.close();
+            } catch (Exception ex) {
                 Platform.runLater(() -> {
-                    centerSearchField.hide();
-                    isComboBoxOpen = false;
-                    // Safely clear the editor without causing selection issues
-                    Platform.runLater(() -> {
-                        try {
-                            centerSearchField.getEditor().setText("");
-                            if (centerSearchField.getScene() != null) {
-                                centerSearchField.getScene().getRoot().requestFocus();
-                            }
-                        } catch (IllegalArgumentException e) {
-                            System.err.println("Exception in dropdown icon click handler: " + e.getMessage());
-                            e.printStackTrace();
-                        }
-                    });
+                    Label errorLabel = new Label("Failed to load padel centers: " + ex.getMessage());
+                    errorLabel.getStyleClass().add("error-label");
+                    centersContainer.getChildren().add(errorLabel);
                 });
+            }
+        }).start();
+    }
+
+    /**
+     * Populates the centersContainer with padel center cards.
+     */
+    private void populatePadelCenters(JSONArray centers) {
+        centersContainer.getChildren().clear();
+        for (int i = 0; i < Math.min(centers.length(), 8); i++) { // Limit to 5 centers
+            JSONObject center = centers.getJSONObject(i);
+            String name = center.optString("name", "Unknown Center");
+            String location = center.optString("location", "Unknown Location");
+            String imageUrl = center.optString("image", "");
+
+            VBox card = new VBox(10);
+            card.getStyleClass().add("center-card");
+            card.setAlignment(javafx.geometry.Pos.CENTER);
+
+            ImageView imageView = new ImageView();
+            Image image = loadImage(imageUrl);
+            if (image != null) {
+                imageView.setImage(image);
             } else {
-                centerSearchField.show();
-                isComboBoxOpen = true;
+                System.err.println("Failed to load image for: " + name + ". Using no image.");
             }
-            event.consume(); // Prevent event from propagating to the ComboBox
-        });
+            imageView.getStyleClass().add("center-image");
 
-        // Prevent ComboBox from handling the click event on the icon
-        centerSearchField.setOnMouseClicked(event -> {
-            if (event.getTarget() == dropdownicon) {
-                event.consume(); // Ensure the ComboBox doesn't process this click
-            }
-        });
+            Label nameLabel = new Label(name);
+            nameLabel.getStyleClass().add("center-name");
+
+            Label locationLabel = new Label(location);
+            locationLabel.getStyleClass().add("center-location");
+
+            card.getChildren().addAll(imageView, nameLabel, locationLabel);
+            centersContainer.getChildren().add(card);
+        }
     }
 
     /**
-     * Applies the style class to the ComboBox for styling in home.css.
+     * Fetches gym classes from the server and populates the classesContainer.
      */
-    private void applyDropdownStyles() {
-        // Add a unique style class to the ComboBox for styling
-        centerSearchField.getStyleClass().add("custom-combo-box");
+    private void fetchGymClasses() {
+        new Thread(() -> {
+            try {
+                Socket socket = new Socket("localhost", 8080);
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+                // Send get_classes request
+                JSONObject request = new JSONObject();
+                request.put("action", "get_classes");
+                out.print(request.toString() + "\n");
+                out.flush();
+
+                // Read response
+                String response = in.readLine();
+                if (response == null) {
+                    throw new Exception("No response from server");
+                }
+
+                // Parse response
+                JSONObject jsonResponse = new JSONObject(response);
+                String status = jsonResponse.optString("status", "error");
+                if ("success".equals(status)) {
+                    JSONArray classes = jsonResponse.getJSONArray("data");
+                    Platform.runLater(() -> populateGymClasses(classes));
+                } else {
+                    throw new Exception(jsonResponse.optString("message", "Failed to fetch gym classes"));
+                }
+
+                socket.close();
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    Label errorLabel = new Label("Failed to load gym classes: " + ex.getMessage());
+                    errorLabel.getStyleClass().add("error-label");
+                    classesContainer.getChildren().add(errorLabel);
+                });
+            }
+        }).start();
     }
 
-    private void updateFilteredItems(String filterText) {
-        if (filterText == null || filterText.isEmpty()) {
-            centerSearchField.setItems(allCenters); // Reset to all items
-            return;
+    /**
+     * Populates the classesContainer with gym class cards.
+     */
+    private void populateGymClasses(JSONArray classes) {
+        classesContainer.getChildren().clear();
+        for (int i = 0; i < Math.min(classes.length(), 3); i++) { // Limit to 3 classes
+            JSONObject gymClass = classes.getJSONObject(i);
+            String name = gymClass.optString("name", "Unknown Class");
+            String instructor = gymClass.optString("instructor", "Unknown Instructor");
+            String time = gymClass.optString("time", "Unknown Time");
+            String imageUrl = gymClass.optString("imagePath", "");
+
+            VBox card = new VBox(10);
+            card.getStyleClass().add("class-card");
+            card.setAlignment(javafx.geometry.Pos.CENTER);
+
+            ImageView imageView = new ImageView();
+            Image image = loadImage(imageUrl);
+            if (image != null) {
+                imageView.setImage(image);
+            } else {
+                System.err.println("Failed to load image for: " + name + ". Using no image.");
+            }
+            imageView.getStyleClass().add("class-image");
+
+            Label nameLabel = new Label(name);
+            nameLabel.getStyleClass().add("class-name");
+
+            Label infoLabel = new Label("Instructor: " + instructor + " | Time: " + time);
+            infoLabel.getStyleClass().add("class-info");
+
+            card.getChildren().addAll(imageView, nameLabel, infoLabel);
+            classesContainer.getChildren().add(card);
         }
-
-        // Filter items based on input (case-insensitive)
-        String filter = filterText.toLowerCase();
-        ObservableList<PadelCenter> filteredItems = allCenters.stream()
-                .filter(center -> center.getName().toLowerCase().contains(filter))
-                .collect(Collectors.toCollection(FXCollections::observableArrayList));
-        centerSearchField.setItems(filteredItems);
     }
 
-    private ObservableList<PadelCenter> loadPadelCentersFromFile() {
-        ObservableList<PadelCenter> centers = FXCollections.observableArrayList();
+    /**
+     * Loads an image from the given URL or falls back to a placeholder.
+     */
+    private Image loadImage(String imageUrl) {
         try {
-            String content = new String(Files.readAllBytes(Paths.get(PADEL_CENTERS_FILE)));
-            JSONArray centersArray = new JSONArray(content);
-            for (int i = 0; i < centersArray.length(); i++) {
-                JSONObject centerJson = centersArray.getJSONObject(i);
-                String name = centerJson.getString("name");
-                centers.add(new PadelCenter(name));
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                // Try loading from URL or file
+                return new Image(imageUrl, true); // true for background loading
             }
-        } catch (IOException e) {
-            System.err.println("Failed to load padel centers from file: " + e.getMessage());
+            // Fallback to placeholder
+            return new Image(getClass().getResourceAsStream(PLACEHOLDER_IMAGE_PATH));
+        } catch (Exception e) {
+            System.err.println("Error loading image: " + e.getMessage());
+            // Return null or try placeholder again if the stream fails
+            return getClass().getResourceAsStream(PLACEHOLDER_IMAGE_PATH) != null
+                    ? new Image(getClass().getResourceAsStream(PLACEHOLDER_IMAGE_PATH))
+                    : null;
         }
-        return centers;
     }
 
-    private void configureDatePicker(DatePicker datePicker, LocalDate today) {
-        if (datePicker.getValue() != null && datePicker.getValue().isBefore(today)) {
-            datePicker.setValue(today);
-        }
-        datePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null && newValue.isBefore(today)) {
-                datePicker.setValue(today);
-            }
-        });
-
-        datePicker.setConverter(new StringConverter<LocalDate>() {
-            private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-            @Override
-            public String toString(LocalDate date) {
-                return date == null ? "" : date.format(formatter);
-            }
-
-            @Override
-            public LocalDate fromString(String string) {
-                return string == null || string.isEmpty() ? null : LocalDate.parse(string, formatter);
-            }
-        });
-    }
-
-    private void setupIcons() {
-        dropdownicon.setCursor(Cursor.HAND);
-        calendaricon.setCursor(Cursor.HAND);
-    }
-
+    /**
+     * Sets up the navbar with hover effects and removes active state from other buttons.
+     */
     private void setupNavbar() {
         for (Node node : navbar.getChildren()) {
-            if (node instanceof Button button && button.getStyleClass().contains("nav-button")) {
+            if (node instanceof Button button) {
                 addButtonHoverEffects(button);
+
+                // Preserve existing FXML onAction handler
+                var existingHandler = button.getOnAction();
+                button.setOnAction(event -> {
+                    setInactiveButtons();
+                    button.getStyleClass().add("active");
+
+                    // Only trigger fallback navigation if no FXML handler exists
+                    if (existingHandler == null) {
+                        if (button == homeButton) {
+                            // No navigation needed
+                        } else if (button == bookingButton) {
+                            goToBooking();
+                        } else if (button == subscriptionButton) {
+                            goToSubscription();
+                        } else if (button == gymButton) {
+                            goToGym();
+                        }
+                    }
+                    // Let the FXML handler handle navigation if it exists
+                    if (existingHandler != null) {
+                        existingHandler.handle(event);
+                    }
+                });
             }
         }
     }
 
+    /**
+     * Adds hover scale effects to a button.
+     */
     private void addButtonHoverEffects(Button button) {
         ScaleTransition grow = new ScaleTransition(Duration.millis(200), button);
         grow.setToX(1.1);
@@ -317,47 +335,15 @@ public class HomeController {
         button.setOnMouseExited(e -> shrink.playFromStart());
     }
 
+    /**
+     * Removes the active style from all navbar buttons.
+     */
     @FXML
-    public void setInactiveButtons() {
+    private void setInactiveButtons() {
         homeButton.getStyleClass().remove("active");
         bookingButton.getStyleClass().remove("active");
         subscriptionButton.getStyleClass().remove("active");
         gymButton.getStyleClass().remove("active");
-    }
-
-    @FXML
-    private void openCalendar() {
-        if (isDatePickerOpen) {
-            datePicker.hide();
-        } else {
-            datePicker.show();
-        }
-        isDatePickerOpen = !isDatePickerOpen;
-    }
-
-    @FXML
-    private void gotoLogin() {
-        try {
-            Parent loginPage = FXMLLoader.load(getClass().getResource("LoginPage.fxml"));
-            Scene currentScene = datePicker.getScene();
-            Parent currentPage = currentScene.getRoot();
-
-            FadeTransition fadeOut = new FadeTransition(Duration.millis(500), currentPage);
-            fadeOut.setFromValue(1.0);
-            fadeOut.setToValue(0.0);
-
-            fadeOut.setOnFinished(e -> {
-                currentScene.setRoot(loginPage);
-                FadeTransition fadeIn = new FadeTransition(Duration.millis(500), loginPage);
-                fadeIn.setFromValue(0.0);
-                fadeIn.setToValue(1.0);
-                fadeIn.play();
-            });
-
-            fadeOut.play();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @FXML
@@ -375,12 +361,29 @@ public class HomeController {
         navigateToPage("gym.fxml", 1);
     }
 
+    @FXML
+    private void goToLogin() {
+        fadeToPage("LoginPage.fxml");
+    }
+
+    @FXML
+    private void goToSignUp() {
+        fadeToPage("SignUpPage.fxml");
+    }
+
+    @FXML
+    private void goToMyAccount() {
+        fadeToPage("MyAccountPage.fxml");
+    }
+
+    /**
+     * Navigates to a new page with a slide transition.
+     */
     private void navigateToPage(String fxmlFile, int direction) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
             Parent newPage = loader.load();
-
-            Stage stage = (Stage) datePicker.getScene().getWindow();
+            Stage stage = (Stage) loginButton.getScene().getWindow();
             Scene currentScene = stage.getScene();
             Parent currentPage = currentScene.getRoot();
 
@@ -388,11 +391,13 @@ public class HomeController {
             newPage.translateXProperty().set(direction * currentScene.getWidth());
             currentScene.setRoot(transitionPane);
 
-            TranslateTransition slideOut = new TranslateTransition(TRANSITION_DURATION, currentPage);
+            TranslateTransition slideOut = new TranslateTransition(Duration.millis(400), currentPage);
             slideOut.setToX(-direction * currentScene.getWidth());
+            slideOut.setInterpolator(Interpolator.EASE_BOTH);
 
-            TranslateTransition slideIn = new TranslateTransition(TRANSITION_DURATION, newPage);
+            TranslateTransition slideIn = new TranslateTransition(Duration.millis(400), newPage);
             slideIn.setToX(0);
+            slideIn.setInterpolator(Interpolator.EASE_BOTH);
 
             slideIn.setOnFinished(e -> {
                 transitionPane.getChildren().clear();
@@ -401,7 +406,38 @@ public class HomeController {
 
             slideOut.play();
             slideIn.play();
+        } catch (Exception e) {
+            System.err.println("Failed to navigate to page " + fxmlFile + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Navigates to a new page with a sequenced fade transition.
+     * @param fxmlFile The FXML file of the target page.
+     */
+    private void fadeToPage(String fxmlFile) {
+        try {
+            // Load the new page
+            Parent newPage = FXMLLoader.load(getClass().getResource(fxmlFile));
+            Scene currentScene = homeRoot.getScene();
+            Parent currentPage = currentScene.getRoot();
+
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(500), currentPage);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+
+            fadeOut.setOnFinished(e -> {
+                currentScene.setRoot(newPage);
+                FadeTransition fadeIn = new FadeTransition(Duration.millis(500), newPage);
+                fadeIn.setFromValue(0.0);
+                fadeIn.setToValue(1.0);
+                fadeIn.play();
+            });
+
+            fadeOut.play();
         } catch (IOException e) {
+            System.err.println("Error loading " + fxmlFile + ": " + e.getMessage());
             e.printStackTrace();
         }
     }

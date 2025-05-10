@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+
+<?import javafx.scene.layout.Pane?>
+<BorderPane fx:id="accountRoot" styleClass="root" stylesheets="@home.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.padelfrontend.MyAccountController">
+    <!-- Top Navigation Bar -->
+    <top>
+        <HBox fx:id="navbar" alignment="CENTER_LEFT" spacing="30" styleClass="navbar">
+            <Label styleClass="logo" text="Padel Gym" />
+            <Button fx:id="homeButton" onAction="#goToHome" prefHeight="70.0" styleClass="nav-button" text="Home" />
+            <Button fx:id="bookingButton" onAction="#goToBooking" prefHeight="70.0" styleClass="nav-button" text="Booking" />
+            <Button fx:id="subscriptionButton" onAction="#goToSubscription" prefHeight="70.0" styleClass="nav-button" text="Subscription" />
+            <Button fx:id="gymButton" onAction="#goToGym" prefHeight="70.0" styleClass="nav-button" text="Gym" />
+            <Pane fx:id="spacerPane" HBox.hgrow="ALWAYS" mouseTransparent="true" />
+            <Button fx:id="loginButton" onAction="#goToLogin" styleClass="login-button" text="Logout" />
+        </HBox>
+    </top>
+
+    <!-- Center Content -->
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="main-scroll-pane" vbarPolicy="AS_NEEDED">
+            <VBox alignment="CENTER" spacing="30" styleClass="main-content">
+                <!-- User Info Section -->
+                <VBox alignment="CENTER" maxWidth="600" spacing="15" styleClass="account-card">
+                    <Label styleClass="section-title" text="My Account" />
+                    <HBox fx:id="memberIdBox" alignment="CENTER_LEFT" spacing="10">
+                        <Label styleClass="account-info" text="Member ID:" />
+                        <Label fx:id="memberIdLabel" styleClass="account-info" text="Loading..." />
+                    </HBox>
+
+                    <HBox fx:id="nameBox" alignment="CENTER_LEFT" spacing="10">
+                        <Label styleClass="account-info" text="First Name:" />
+                        <Label fx:id="nameLabel" styleClass="account-info" text="Loading..." />
+                    </HBox>
+
+                    <HBox fx:id="lastNameBox" alignment="CENTER_LEFT" spacing="10">
+                        <Label styleClass="account-info" text="Last Name:" />
+                        <Label fx:id="lastNameLabel" styleClass="account-info" text="Loading..." />
+                    </HBox>
+
+                    <HBox fx:id="usernameBox" alignment="CENTER_LEFT" spacing="10">
+                        <Label styleClass="account-info" text="Username:" />
+                        <Label fx:id="usernameLabel" styleClass="account-info" text="Loading..." />
+                    </HBox>
+
+                    <HBox fx:id="phoneBox" alignment="CENTER_LEFT" spacing="10">
+                        <Label styleClass="account-info" text="Phone Number:" />
+                        <Label fx:id="phoneNumberLabel" styleClass="account-info" text="Loading..." />
+                    </HBox>
+
+                    <HBox fx:id="emailBox" alignment="CENTER_LEFT" spacing="10">
+                        <Label styleClass="account-info" text="Email:" />
+                        <Label fx:id="emailLabel" styleClass="account-info" text="Loading..." />
+                    </HBox>
+
+                    <Button fx:id="editButton" onAction="#editUserInfo" styleClass="edit-button" text="Edit" />
+                    <Button fx:id="saveButton" onAction="#saveUserInfo" styleClass="save-button" text="Save Changes" visible="false" />
+                </VBox>
+
+                <!-- Active Subscriptions Section -->
+                <VBox alignment="CENTER" maxWidth="600" spacing="20" styleClass="account-card">
+                    <Label styleClass="section-title" text="Active Subscriptions" />
+                    <VBox fx:id="subscriptionsBox" spacing="10" />
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

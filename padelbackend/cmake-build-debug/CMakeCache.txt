@@ -113,7 +113,7 @@ CMAKE_FIND_PACKAGE_REDIRECTS_DIR:STATIC=C:/Users/seife/padel-gym/padelbackend/cm
 CMAKE_GNUtoMS:BOOL=OFF
 
 //Install path prefix, prepended onto install directories.
-CMAKE_INSTALL_PREFIX:PATH=C:/Program Files (x86)/padelbackend
+CMAKE_INSTALL_PREFIX:PATH=C:/Program Files (x86)/padel-gym
 
 //Path to a program.
 CMAKE_LINKER:FILEPATH=C:/Program Files/JetBrains/CLion 2024.3.5/bin/mingw/bin/ld.exe
@@ -250,15 +250,6 @@ padel-gym_IS_TOP_LEVEL:STATIC=ON
 
 //Value Computed by CMake
 padel-gym_SOURCE_DIR:STATIC=C:/Users/seife/padel-gym/padelbackend
-
-//Value Computed by CMake
-padelbackend_BINARY_DIR:STATIC=C:/Users/seife/padel-gym/padelbackend/cmake-build-debug
-
-//Value Computed by CMake
-padelbackend_IS_TOP_LEVEL:STATIC=ON
-
-//Value Computed by CMake
-padelbackend_SOURCE_DIR:STATIC=C:/Users/seife/padel-gym/padelbackend
 
 
 ########################

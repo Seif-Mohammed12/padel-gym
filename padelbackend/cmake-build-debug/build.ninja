@@ -49,15 +49,57 @@ cmake_ninja_workdir = C$:/Users/seife/padel-gym/padelbackend/cmake-build-debug/
 
 build cmake_object_order_depends_target_padelbackend: phony || .
 
-build CMakeFiles/padelbackend.dir/server.cpp.obj: CXX_COMPILER__padelbackend_unscanned_Debug C$:/Users/seife/padel-gym/padelbackend/server.cpp || cmake_object_order_depends_target_padelbackend
-  DEP_FILE = CMakeFiles\padelbackend.dir\server.cpp.obj.d
+build CMakeFiles/padelbackend.dir/FileManager.cpp.obj: CXX_COMPILER__padelbackend_unscanned_Debug C$:/Users/seife/padel-gym/padelbackend/FileManager.cpp || cmake_object_order_depends_target_padelbackend
+  DEP_FILE = CMakeFiles\padelbackend.dir\FileManager.cpp.obj.d
   FLAGS = -g -std=gnu++20 -fdiagnostics-color=always
   INCLUDES = -IC:/Users/seife/padel-gym/padelbackend/include
   OBJECT_DIR = CMakeFiles\padelbackend.dir
   OBJECT_FILE_DIR = CMakeFiles\padelbackend.dir
 
-build CMakeFiles/padelbackend.dir/FileManager.cpp.obj: CXX_COMPILER__padelbackend_unscanned_Debug C$:/Users/seife/padel-gym/padelbackend/FileManager.cpp || cmake_object_order_depends_target_padelbackend
-  DEP_FILE = CMakeFiles\padelbackend.dir\FileManager.cpp.obj.d
+build CMakeFiles/padelbackend.dir/GymClass.cpp.obj: CXX_COMPILER__padelbackend_unscanned_Debug C$:/Users/seife/padel-gym/padelbackend/GymClass.cpp || cmake_object_order_depends_target_padelbackend
+  DEP_FILE = CMakeFiles\padelbackend.dir\GymClass.cpp.obj.d
+  FLAGS = -g -std=gnu++20 -fdiagnostics-color=always
+  INCLUDES = -IC:/Users/seife/padel-gym/padelbackend/include
+  OBJECT_DIR = CMakeFiles\padelbackend.dir
+  OBJECT_FILE_DIR = CMakeFiles\padelbackend.dir
+
+build CMakeFiles/padelbackend.dir/GymSystem.cpp.obj: CXX_COMPILER__padelbackend_unscanned_Debug C$:/Users/seife/padel-gym/padelbackend/GymSystem.cpp || cmake_object_order_depends_target_padelbackend
+  DEP_FILE = CMakeFiles\padelbackend.dir\GymSystem.cpp.obj.d
+  FLAGS = -g -std=gnu++20 -fdiagnostics-color=always
+  INCLUDES = -IC:/Users/seife/padel-gym/padelbackend/include
+  OBJECT_DIR = CMakeFiles\padelbackend.dir
+  OBJECT_FILE_DIR = CMakeFiles\padelbackend.dir
+
+build CMakeFiles/padelbackend.dir/LoginSystem.cpp.obj: CXX_COMPILER__padelbackend_unscanned_Debug C$:/Users/seife/padel-gym/padelbackend/LoginSystem.cpp || cmake_object_order_depends_target_padelbackend
+  DEP_FILE = CMakeFiles\padelbackend.dir\LoginSystem.cpp.obj.d
+  FLAGS = -g -std=gnu++20 -fdiagnostics-color=always
+  INCLUDES = -IC:/Users/seife/padel-gym/padelbackend/include
+  OBJECT_DIR = CMakeFiles\padelbackend.dir
+  OBJECT_FILE_DIR = CMakeFiles\padelbackend.dir
+
+build CMakeFiles/padelbackend.dir/Registration.cpp.obj: CXX_COMPILER__padelbackend_unscanned_Debug C$:/Users/seife/padel-gym/padelbackend/Registration.cpp || cmake_object_order_depends_target_padelbackend
+  DEP_FILE = CMakeFiles\padelbackend.dir\Registration.cpp.obj.d
+  FLAGS = -g -std=gnu++20 -fdiagnostics-color=always
+  INCLUDES = -IC:/Users/seife/padel-gym/padelbackend/include
+  OBJECT_DIR = CMakeFiles\padelbackend.dir
+  OBJECT_FILE_DIR = CMakeFiles\padelbackend.dir
+
+build CMakeFiles/padelbackend.dir/SubscriptionManager.cpp.obj: CXX_COMPILER__padelbackend_unscanned_Debug C$:/Users/seife/padel-gym/padelbackend/SubscriptionManager.cpp || cmake_object_order_depends_target_padelbackend
+  DEP_FILE = CMakeFiles\padelbackend.dir\SubscriptionManager.cpp.obj.d
+  FLAGS = -g -std=gnu++20 -fdiagnostics-color=always
+  INCLUDES = -IC:/Users/seife/padel-gym/padelbackend/include
+  OBJECT_DIR = CMakeFiles\padelbackend.dir
+  OBJECT_FILE_DIR = CMakeFiles\padelbackend.dir
+
+build CMakeFiles/padelbackend.dir/WorkoutHistory.cpp.obj: CXX_COMPILER__padelbackend_unscanned_Debug C$:/Users/seife/padel-gym/padelbackend/WorkoutHistory.cpp || cmake_object_order_depends_target_padelbackend
+  DEP_FILE = CMakeFiles\padelbackend.dir\WorkoutHistory.cpp.obj.d
+  FLAGS = -g -std=gnu++20 -fdiagnostics-color=always
+  INCLUDES = -IC:/Users/seife/padel-gym/padelbackend/include
+  OBJECT_DIR = CMakeFiles\padelbackend.dir
+  OBJECT_FILE_DIR = CMakeFiles\padelbackend.dir
+
+build CMakeFiles/padelbackend.dir/server.cpp.obj: CXX_COMPILER__padelbackend_unscanned_Debug C$:/Users/seife/padel-gym/padelbackend/server.cpp || cmake_object_order_depends_target_padelbackend
+  DEP_FILE = CMakeFiles\padelbackend.dir\server.cpp.obj.d
   FLAGS = -g -std=gnu++20 -fdiagnostics-color=always
   INCLUDES = -IC:/Users/seife/padel-gym/padelbackend/include
   OBJECT_DIR = CMakeFiles\padelbackend.dir
@@ -71,7 +113,7 @@ build CMakeFiles/padelbackend.dir/FileManager.cpp.obj: CXX_COMPILER__padelbacken
 #############################################
 # Link the executable padelbackend.exe
 
-build padelbackend.exe: CXX_EXECUTABLE_LINKER__padelbackend_Debug CMakeFiles/padelbackend.dir/server.cpp.obj CMakeFiles/padelbackend.dir/FileManager.cpp.obj
+build padelbackend.exe: CXX_EXECUTABLE_LINKER__padelbackend_Debug CMakeFiles/padelbackend.dir/FileManager.cpp.obj CMakeFiles/padelbackend.dir/GymClass.cpp.obj CMakeFiles/padelbackend.dir/GymSystem.cpp.obj CMakeFiles/padelbackend.dir/LoginSystem.cpp.obj CMakeFiles/padelbackend.dir/Registration.cpp.obj CMakeFiles/padelbackend.dir/SubscriptionManager.cpp.obj CMakeFiles/padelbackend.dir/WorkoutHistory.cpp.obj CMakeFiles/padelbackend.dir/server.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lws2_32  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\padelbackend.dir

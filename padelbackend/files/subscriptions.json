@@ -1,0 +1,57 @@
+[
+    {
+        "features": [
+            "Access to gym facilities",
+            "1 group class per week",
+            "Basic support"
+        ],
+        "imagePath": "file:images/yoga.jpg",
+        "name": "Basic Plan",
+        "pricing": {
+            "1_month": 29.99,
+            "1_year": 299.99,
+            "3_months": 84.99,
+            "6_months": 149.99
+        },
+        "subscribers": [
+            "MEM589493"
+        ]
+    },
+    {
+        "features": [
+            "Access to gym facilities",
+            "3 group classes per week",
+            "Priority support"
+        ],
+        "imagePath": "file:images/yoga.jpg",
+        "name": "Pro Plan",
+        "pricing": {
+            "1_month": 49.99,
+            "1_year": 499.99,
+            "3_months": 139.99,
+            "6_months": 259.99
+        },
+        "subscribers": [
+            "MEM589493"
+        ]
+    },
+    {
+        "features": [
+            "Access to gym facilities",
+            "Unlimited group classes",
+            "Premium support",
+            "Personal trainer session"
+        ],
+        "imagePath": "file:images/yoga.jpg",
+        "name": "Elite Plan",
+        "pricing": {
+            "1_month": 79.99,
+            "1_year": 749.99,
+            "3_months": 219.99,
+            "6_months": 399.99
+        },
+        "subscribers": [
+            "MEM589493"
+        ]
+    }
+]

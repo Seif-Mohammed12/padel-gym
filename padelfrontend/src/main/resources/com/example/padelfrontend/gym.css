@@ -1,18 +1,27 @@
+/* Existing styles from your provided CSS */
 .root {
     -fx-background-color: linear-gradient(to bottom, #0f1f3d, #000000);
 }
 
+/* Top Navigation Bar */
 .navbar {
-    -fx-background-color: rgba(15, 15, 30, 0.95);
+    -fx-background-color: rgba(0, 0, 0, 0.7);
     -fx-padding: 10 40;
-    -fx-spacing: 15;
-    -fx-alignment: center-left;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-width: 0 0 1 0;
+}
+
+.logo {
+    -fx-text-fill: #3a82f7;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial";
 }
 
 .nav-button {
     -fx-background-color: transparent;
     -fx-text-fill: white;
-    -fx-font-size: 18px;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-font-family: "Arial";
     -fx-cursor: hand;
@@ -20,8 +29,12 @@
 
 .nav-button:hover {
     -fx-text-fill: #3a82f7;
+}
+
+.nav-button:pressed {
     -fx-background-color: rgba(30, 30, 50, 1.0);
-    -fx-background-radius: 10;
+    -fx-scale-x: 1;
+    -fx-scale-y: 1;
 }
 
 .nav-button.active {
@@ -29,327 +42,280 @@
 }
 
 .login-button {
-    -fx-background-color: linear-gradient(to right, #1f1f2e, #2c2c3d);
-    -fx-text-fill: #e0e0e0;
+    -fx-background-color: linear-gradient(to bottom, #3a82f7, #1e57f1);
+    -fx-text-fill: white;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-padding: 10 20;
-    -fx-background-radius: 12;
-    -fx-border-radius: 12;
+    -fx-background-radius: 10;
     -fx-cursor: hand;
-    -fx-border-color: #3a3a50;
-    -fx-border-width: 1;
 }
 
 .login-button:hover {
-    -fx-background-color: linear-gradient(to right, #29293e, #35354a);
+    -fx-background-color: linear-gradient(to bottom, #2c6ae4, #174dc6);
 }
 
-.main-scroll {
+/* Gym Class Card Styles */
+.gym-class-card {
+    -fx-background-color: linear-gradient(to bottom right, #2E3538, #1E2528);
+    -fx-background-radius: 15;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0, 0, 3);
+    -fx-alignment: top-center;
+    -fx-cursor: hand;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-width: 1;
+    -fx-border-radius: 15;
+}
+
+.gym-class-card:hover {
+    -fx-background-color: linear-gradient(to bottom right, #353C3F, #252C2F);
+    -fx-effect: dropshadow(gaussian, #FFCA28, 15, 0.3, 0, 0);
+    -fx-translate-y: -5;
+    -fx-border-color: #FFCA28;
+}
+
+/* Gym Class Image Styles */
+.gym-class-image {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 5, 0, 0, 1);
+}
+
+/* Gym Class Name Styles */
+.gym-class-name {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFFFFF;
+    -fx-padding: 5 0;
+    -fx-font-family: "Arial";
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0, 1, 1);
+}
+
+/* Gym Class Detail Styles */
+.gym-class-detail {
+    -fx-font-size: 14px;
+    -fx-text-fill: #B0BEC5;
+    -fx-padding: 2 0;
+    -fx-font-family: "Arial";
+}
+
+/* Capacity Indicator Styles */
+.capacity-circle {
+    -fx-fill: #1c1c1c;
+    -fx-stroke: #3a82f7;
+    -fx-stroke-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0, 0, 1);
+}
+
+.capacity-inner-circle {
+    -fx-fill: #2E3538;
+}
+
+.capacity-progress .track {
+    -fx-background-color: #666;
+    -fx-background-radius: 6;
+}
+
+.capacity-progress .bar {
+    -fx-background-color: linear-gradient(to right, #5a9bff, #2a7bff);
+    -fx-background-radius: 6;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 255, 0.3), 5, 0, 0, 1);
+}
+
+.capacity-progress.capacity-warning .bar {
+    -fx-background-color: linear-gradient(to right, #ffd740, #ffab00);
+    -fx-effect: dropshadow(gaussian, rgba(255, 165, 0, 0.3), 5, 0, 0, 1);
+}
+
+.capacity-progress.capacity-full .bar {
+    -fx-background-color: linear-gradient(to right, #ff7043, #ff3d00);
+    -fx-effect: dropshadow(gaussian, rgba(255, 0, 0, 0.3), 5, 0, 0, 1);
+}
+
+.capacity-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-family: "Arial";
+    -fx-font-weight: bold;
+}
+
+/* Gym Action Button Styles */
+.gym-action-button {
+    -fx-background-color: linear-gradient(to right, #FFCA28, #FFB300);
+    -fx-background-radius: 20;
+    -fx-text-fill: #12171A;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 8 20;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0, 0, 1);
+}
+
+.gym-action-button:hover {
+    -fx-background-color: linear-gradient(to right, #FFD54F, #FFCA28);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.gym-action-button:pressed {
+    -fx-background-color: linear-gradient(to right, #FFB300, #FFA000);
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
+}
+
+/* Header Section Styles */
+.header-section {
     -fx-background-color: transparent;
 }
 
-.dashboard-wrapper {
-    -fx-padding: 40 60;
-    -fx-spacing: 40;
-    -fx-alignment: top-center;
-}
-
-.header-title {
-    -fx-font-size: 34px;
+.tagline {
+    -fx-font-size: 36px;
     -fx-font-weight: bold;
-    -fx-text-fill: white;
-    -fx-font-family: "Roboto";
-    -fx-alignment: center;
-    -fx-padding: 0 0 30 0;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-family: "Arial";
 }
 
-.column {
-    -fx-spacing: 30;
+/* New Styles for Workout History and Subscription Management */
+.tab-pane {
+    -fx-background-color: transparent;
 }
 
-.section-card {
-    -fx-background-color: rgba(50, 50, 66, 0.9);
-    -fx-background-radius: 20;
-    -fx-padding: 30;
-    -fx-border-color: rgba(255, 255, 255, 0.1);
-    -fx-border-width: 1;
-    -fx-border-radius: 20;
-    -fx-spacing: 15;
+.tab-pane .tab-header-background {
+    -fx-background-color: rgba(15, 15, 30, 0.95);
 }
 
-.section-header {
-    -fx-alignment: center-left;
-    -fx-spacing: 10;
+.tab-pane .tab {
+    -fx-background-color: #2E3538;
+    -fx-padding: 10;
+    -fx-background-radius: 10 10 0 0;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #3a82f7;
+}
+
+.tab-pane .tab-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-family: "Arial";
+}
+
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: #FFFFFF;
 }
 
 .section-title {
     -fx-font-size: 24px;
     -fx-font-weight: bold;
-    -fx-text-fill: white;
-    -fx-font-family: "Roboto";
-    -fx-padding: 0 0 15 0;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-family: "Arial";
+    -fx-padding: 0 0 20 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0, 1, 1);
 }
 
-.sub-section-title {
-    -fx-font-size: 18px;
-    -fx-font-weight: bold;
-    -fx-text-fill: white;
-    -fx-font-family: "Roboto";
+.workout-history-table {
+    -fx-background-color: #2E3538;
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0, 0, 3);
 }
 
-.add-button {
-    -fx-background-color: #3a82f7;
-    -fx-text-fill: white;
+.workout-history-table .column-header {
+    -fx-background-color: #1E2528;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-font-family: "Arial";
-    -fx-padding: 5 10;
-    -fx-background-radius: 15;
-    -fx-cursor: hand;
-}
-
-.add-button:hover {
-    -fx-background-color: #5a92f9;
-}
-
-.add-button:pressed {
-    -fx-background-color: #2a72d7;
-}
-
-.days-list {
-    -fx-spacing: 10;
-    -fx-padding: 10 0;
-}
-
-.day-item {
-    -fx-font-size: 16px;
-    -fx-text-fill: #e0e0e0;
+    -fx-text-fill: #FFFFFF;
     -fx-font-family: "Arial";
     -fx-padding: 10;
-    -fx-background-color: #2e2e3e;
-    -fx-background-radius: 10;
-    -fx-cursor: hand;
 }
 
-.day-item:hover {
-    -fx-background-color: #3e3e4e;
-}
-
-.activities-list {
-    -fx-background-color: #2e2e3e;
-    -fx-background-radius: 10;
-    -fx-padding: 15;
-    -fx-border-color: rgba(255, 255, 255, 0.1);
-    -fx-border-width: 1;
-    -fx-border-radius: 10;
-    -fx-spacing: 10;
-    -fx-pref-width: 250;
-}
-
-.activity-item {
-    -fx-background-color: rgba(62, 62, 78, 0.5);
-    -fx-background-radius: 8;
+.workout-history-table .cell {
+    -fx-font-size: 14px;
+    -fx-text-fill: #B0BEC5;
+    -fx-font-family: "Arial";
     -fx-padding: 10;
+    -fx-background-color: #2E3538;
+}
+
+.workout-history-table .placeholder {
+    -fx-text-fill: #B0BEC5;
+    -fx-font-size: 14px;
+    -fx-font-family: "Arial";
+}
+
+.sub-action-button {
+    -fx-background-color: linear-gradient(to right, #3a82f7, #2a7bff);
+    -fx-background-radius: 20;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+    -fx-font-family: "Arial";
     -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0, 0, 1);
 }
 
-.activity-item:hover {
-    -fx-background-color: #3e3e4e;
+.sub-action-button:hover {
+    -fx-background-color: linear-gradient(to right, #5a9bff, #3a82f7);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
 }
 
-.activity-icon {
-    -fx-pref-width: 30;
-    -fx-pref-height: 30;
-    -fx-background-color: #B0BEC5;
-    -fx-background-radius: 5;
+.sub-action-button:pressed {
+    -fx-background-color: linear-gradient(to right, #2a7bff, #1a6bff);
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
 }
 
-.activity-info {
-    -fx-spacing: 5;
-}
-
-.activity-name {
-    -fx-font-size: 16px;
+.cancel-button {
+    -fx-background-color: linear-gradient(to right, #ff7043, #ff3d00);
+    -fx-background-radius: 20;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-text-fill: white;
+    -fx-padding: 10 20;
     -fx-font-family: "Arial";
-}
-
-.activity-sets {
-    -fx-font-size: 12px;
-    -fx-text-fill: #B0BEC5;
-    -fx-font-family: "Arial";
-}
-
-.activity-checkbox {
     -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0, 0, 1);
 }
 
-.activity-details {
-    -fx-background-color: #2e2e3e;
-    -fx-background-radius: 10;
-    -fx-padding: 15;
-    -fx-border-color: rgba(255, 255, 255, 0.1);
-    -fx-border-width: 1;
-    -fx-border-radius: 10;
-    -fx-spacing: 15;
-    -fx-pref-width: 300;
+.cancel-button:hover {
+    -fx-background-color: linear-gradient(to right, #ff8a65, #ff5722);
 }
 
-.activity-icon-large {
-    -fx-pref-width: 50;
-    -fx-pref-height: 50;
-    -fx-background-color: #B0BEC5;
-    -fx-background-radius: 5;
+.cancel-button:pressed {
+    -fx-background-color: linear-gradient(to right, #ff5722, #ff2d00);
 }
 
-.activity-name-large {
-    -fx-font-size: 18px;
-    -fx-font-weight: bold;
-    -fx-text-fill: white;
-    -fx-font-family: "Arial";
-}
-
-.activity-sets-large {
-    -fx-font-size: 14px;
-    -fx-text-fill: #B0BEC5;
-    -fx-font-family: "Arial";
-}
-
-.activity-stats {
-    -fx-alignment: center-left;
-}
-
-.activity-stat {
-    -fx-font-size: 14px;
-    -fx-text-fill: #e0e0e0;
-    -fx-font-family: "Arial";
-}
-
-.notes-area {
-    -fx-background-color: #1e1e2e;
-    -fx-background-radius: 5;
-    -fx-border-color: rgba(255, 255, 255, 0.1);
-    -fx-border-width: 1;
-    -fx-border-radius: 5;
-    -fx-text-fill: #e0e0e0;
-    -fx-font-family: "Arial";
-    -fx-font-size: 14px;
-}
-
-.workout-table {
-    -fx-background-color: #2e2e3e;
-    -fx-background-radius: 10;
-    -fx-border-color: rgba(255, 255, 255, 0.1);
-    -fx-border-width: 1;
-    -fx-border-radius: 10;
-}
-
-.workout-table .column-header {
-    -fx-background-color: #3e3e4e;
-    -fx-font-weight: bold;
-    -fx-text-fill: white;
-    -fx-font-size: 15px;
-    -fx-font-family: "Arial";
-}
-
-.workout-table .table-cell {
-    -fx-alignment: center;
-    -fx-text-fill: #e0e0e0;
-    -fx-font-size: 14px;
-    -fx-font-family: "Arial";
-    -fx-background-color: #2e2e3e;
-}
-
-.workout-table .table-row-cell:hover {
-    -fx-background-color: #3a3a4e;
-}
-
-.graph-placeholder {
-    -fx-background-color: #2e2e3e;
-    -fx-background-radius: 10;
-    -fx-border-color: rgba(255, 255, 255, 0.1);
-    -fx-border-width: 1;
-    -fx-border-radius: 10;
-    -fx-alignment: center;
-}
-
-.placeholder-text {
-    -fx-font-size: 14px;
-    -fx-text-fill: #B0BEC5;
-    -fx-font-family: "Arial";
-    -fx-alignment: center;
-}
-
-.horizontal-scroll {
-    -fx-background-color: transparent;
-    -fx-padding: 0;
-}
-
-/* Trainer and Class Cards (Uniform Size) */
-.trainer-card, .class-card {
-    -fx-background-color: #2e2e3e;
+.subscription-details-panel {
+    -fx-background-color: linear-gradient(to bottom right, #2E3538, #1E2528);
     -fx-background-radius: 15;
-    -fx-padding: 20;
-    -fx-pref-width: 200; /* Set a fixed width */
-    -fx-pref-height: 250; /* Set a fixed height */
-    -fx-spacing: 10;
-    -fx-alignment: center;
     -fx-border-color: rgba(255, 255, 255, 0.1);
     -fx-border-width: 1;
     -fx-border-radius: 15;
-    -fx-cursor: hand;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0, 0, 3);
 }
 
-.trainer-card:hover, .class-card:hover {
-    -fx-background-color: #3e3e4e;
-}
-
-/* Card Title */
-.card-title {
-    -fx-font-size: 18px;
+.sub-detail-label {
+    -fx-font-size: 16px;
+    -fx-text-fill: #FFFFFF;
     -fx-font-weight: bold;
+    -fx-font-family: "Arial";
+    -fx-padding: 5 0;
+}
+.gym-action-button {
+    -fx-background-color: #4CAF50;
     -fx-text-fill: white;
-    -fx-font-family: "Arial";
-    -fx-alignment: center;
-}
-
-/* Card Details */
-.card-detail {
     -fx-font-size: 14px;
-    -fx-text-fill: #B0BEC5;
-    -fx-font-family: "Arial";
-    -fx-alignment: center;
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 5px;
 }
-
-/* Ensuring all cards in the grid align */
-.card-grid {
-    -fx-spacing: 20;
-    -fx-padding: 10;
-    -fx-alignment: center;
-    -fx-hgap: 20; /* Horizontal gap between cards */
-    -fx-vgap: 20; /* Vertical gap between cards */
-    -fx-grid-lines-visible: false;
-    -fx-background-color: transparent; /* Optional background color for grid */
+.gym-action-button:hover {
+    -fx-background-color: #45a049;
 }
-
-
-.book-button {
-    -fx-background-color: #FFCA28;
-    -fx-text-fill: #12171A;
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-font-family: "Arial";
-    -fx-padding: 10 20;
-    -fx-background-radius: 25;
-    -fx-cursor: hand;
-}
-
-.book-button:hover {
-    -fx-background-color: #FFD54F;
-}
-
-.book-button:pressed {
-    -fx-background-color: #FFB300;
+.workout-history-table {
+    -fx-background-color: #f9f9f9;
+    -fx-border-color: #ddd;
 }

@@ -1,24 +1,31 @@
+/* Root background */
 .root {
     -fx-background-color: linear-gradient(to bottom, #0f1f3d, #000000);
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: 100% 100%;
 }
 
-/* Top Navigation Bar */
+/* Navbar */
 .navbar {
-    -fx-background-color: rgba(15, 15, 30, 0.95);
-    -fx-padding: 0 40;
+    -fx-background-color: rgba(0, 0, 0, 0.7);
+    -fx-padding: 10 40;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-width: 0 0 1 0;
 }
 
+/* Logo */
 .logo {
-    -fx-text-fill: #3a82f7;
     -fx-font-size: 24px;
     -fx-font-weight: bold;
+    -fx-text-fill: #3a82f7;
     -fx-font-family: "Arial";
 }
 
+/* Nav Buttons */
 .nav-button {
     -fx-background-color: transparent;
     -fx-text-fill: white;
-    -fx-font-size: 20px;
+    -fx-font-size: 18px;
     -fx-font-weight: bold;
     -fx-font-family: "Arial";
     -fx-cursor: hand;
@@ -26,109 +33,223 @@
 
 .nav-button:hover {
     -fx-text-fill: #3a82f7;
-    -fx-background-color: rgba(30, 30, 50, 1.0);
-    -fx-background-radius: 10;
-}
-
-.nav-button:pressed {
-    -fx-background-color: rgba(30, 30, 50, 1.0);
-    -fx-scale-x: 1;
-    -fx-scale-y: 1;
 }
 
 .nav-button.active {
     -fx-text-fill: #4CAF50; /* White text color */
 }
 
+/* Login Button */
 .login-button {
-    -fx-background-color: linear-gradient(to right, #1f1f2e, #2c2c3d);
-    -fx-text-fill: #e0e0e0;
+    -fx-background-color: linear-gradient(to bottom, #3a82f7, #1e57f1);
+    -fx-text-fill: white;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-padding: 10 20;
-    -fx-background-radius: 12;
-    -fx-border-radius: 12;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 10, 0.3, 0, 3);
+    -fx-background-radius: 10;
     -fx-cursor: hand;
-    -fx-transition: all 0.3s ease;
-    -fx-border-color: #3a3a50;
-    -fx-border-width: 1;
 }
 
 .login-button:hover {
-    -fx-scale-x: 1.08;
-    -fx-scale-y: 1.08;
-    -fx-effect: dropshadow(gaussian, rgba(60, 60, 80, 0.6), 12, 0.5, 0, 4);
-    -fx-background-color: linear-gradient(to right, #29293e, #35354a);
+    -fx-background-color: linear-gradient(to bottom, #2c6ae4, #174dc6);
 }
 
-/* Booking Section */
-.booking-title {
-    -fx-text-fill: white;
-    -fx-font-size: 28px;
-    -fx-font-weight: bold;
-    -fx-font-family: "Roboto";
+/* Main Content */
+.main-content {
+    -fx-padding: 50;
+    -fx-alignment: center;
 }
 
-.booking-container {
-    -fx-background-color: rgba(20, 20, 20, 0.85);
-    -fx-background-radius: 60;
-    -fx-padding: 25 35;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 20, 0.3, 0, 10);
+/* Hero Section */
+.hero-card {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 20;
+    -fx-padding: 40;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 20, 0.3, 0, 10);
     -fx-border-color: rgba(255, 255, 255, 0.1);
-    -fx-border-radius: 60;
-    -fx-pref-width: 300px;
-}
-
-.booking-input {
-    -fx-background-color: #1c1c1c;
-    -fx-text-fill: white;
-    -fx-pref-height: 59.2px;
-    -fx-font-size: 14px;
-    -fx-background-radius: 30;
-    -fx-padding: 10 20;
-    -fx-min-width: 200;
-    -fx-border-color: transparent;
-}
-
-.booking-input:focused {
-    -fx-border-color: #3a82f7;
+    -fx-border-radius: 20;
     -fx-border-width: 1;
-    -fx-border-radius: 30;
 }
 
-.explore-button {
-    -fx-background-color: #0a1a36;
+.hero-title {
+    -fx-font-size: 48px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-font-family: "Arial";
+    -fx-alignment: center;
+}
+
+.hero-tagline {
+    -fx-font-size: 24px;
+    -fx-text-fill: #bbbbbb;
+    -fx-font-family: "Arial";
+    -fx-alignment: center;
+}
+
+.join-button {
+    -fx-background-color: linear-gradient(to bottom, #3a82f7, #1e57f1);
     -fx-text-fill: white;
     -fx-font-size: 18px;
     -fx-font-weight: bold;
-    -fx-padding: 10 24;
-    -fx-background-radius: 30;
+    -fx-padding: 12 30;
+    -fx-background-radius: 10;
     -fx-cursor: hand;
+    -fx-pref-width: 200;
 }
 
-.explore-button:hover {
-    -fx-background-color: #3a82f7;
-    -fx-text-fill: white;
+.join-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #2c6ae4, #174dc6);
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
 }
 
-#datePicker .text-field {
-    -fx-background-color: #1c1c1c;
+.my-account-button {
+    -fx-background-color: linear-gradient(to bottom, #4CAF50, #388E3C); /* Green gradient for distinction */
     -fx-text-fill: white;
     -fx-font-size: 18px;
-    -fx-prompt-text-fill: white;
-    -fx-background-image: url("/icons/calendar.png");
-    -fx-background-position: right center;
-    -fx-background-repeat: no-repeat;
-    -fx-padding: 0 30 0 0;
+    -fx-font-weight: bold;
+    -fx-padding: 12 30;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-pref-width: 200;
 }
 
-#datePicker .arrow-button {
-    -fx-opacity: 0;
-    -fx-padding: 0 30 0 0;
+.my-account-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #45a049, #2f7d32);
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
 }
 
-/* DatePicker Popup (Dropdown Calendar) Styles */
+/* Section Titles */
+.section-title {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-font-family: "Arial";
+    -fx-alignment: center;
+}
+
+/* Padel Center Cards */
+.center-card {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-background-radius: 15;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0.2, 0, 5);
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 15;
+    -fx-border-width: 1;
+    -fx-pref-width: 250;
+    -fx-alignment: center;
+}
+
+.center-image {
+    -fx-fit-width: 200;
+    -fx-fit-height: 150;
+    -fx-preserve-ratio: true;
+    -fx-background-radius: 10;
+}
+
+.center-name {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-font-family: "Arial";
+    -fx-alignment: center;
+}
+
+.center-location {
+    -fx-font-size: 14px;
+    -fx-text-fill: #bbbbbb;
+    -fx-font-family: "Arial";
+    -fx-alignment: center;
+}
+
+/* Gym Class Cards */
+.class-card {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-background-radius: 15;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0.2, 0, 5);
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 15;
+    -fx-border-width: 1;
+    -fx-pref-width: 350;
+    -fx-alignment: center;
+}
+
+.class-image {
+    -fx-fit-width: 200;
+    -fx-fit-height: 150;
+    -fx-preserve-ratio: true;
+    -fx-background-radius: 10;
+}
+
+.class-name {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-font-family: "Arial";
+    -fx-alignment: center;
+}
+
+.class-info {
+    -fx-font-size: 14px;
+    -fx-text-fill: #bbbbbb;
+    -fx-font-family: "Arial";
+    -fx-alignment: center;
+}
+
+/* Subscription Teaser */
+.subscription-teaser {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 20;
+    -fx-padding: 30;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 20, 0.3, 0, 10);
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 20;
+    -fx-border-width: 1;
+}
+
+.teaser-text {
+    -fx-font-size: 18px;
+    -fx-text-fill: #bbbbbb;
+    -fx-font-family: "Arial";
+    -fx-alignment: center;
+}
+
+.view-plans-button {
+    -fx-background-color: linear-gradient(to bottom, #3a82f7, #1e57f1);
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-pref-width: 150;
+}
+
+.view-plans-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #2c6ae4, #174dc6);
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
+}
+
+/* Scroll Pane */
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 0;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.centers-container {
+    -fx-padding: 10;
+}
+
+/* DatePicker styles (retained for consistency) */
 .date-picker-popup {
     -fx-background-color: #2E3538;
     -fx-background-radius: 10;
@@ -212,187 +333,115 @@
     -fx-border-radius: 5;
 }
 
-#centerSearchField {
-    -fx-background-color: #1c1c1c;
-    -fx-text-fill: white;
-    -fx-font-size: 16px;
-    -fx-prompt-text-fill: white;
-    -fx-padding: 0 30 0 0;
-}
-
-#sportComboBox {
-    -fx-background-color: #1c1c1c;
-    -fx-text-fill: white;
-    -fx-font-size: 18px;
-    -fx-prompt-text-fill: white;
-}
-
-.combo-box .text-field {
-    -fx-background-color: #1c1c1c;
-    -fx-text-fill: white;
-    -fx-font-size: 18px;
-    -fx-background-radius: 30;
-    -fx-prompt-text-fill: white;
-    -fx-padding: 0 30 0 20;
-}
-
-.combo-box .arrow-button {
+/* Main Scroll Pane */
+.main-scroll-pane {
     -fx-background-color: transparent;
+    -fx-background: transparent;
     -fx-padding: 0;
 }
 
-.combo-box .arrow {
-    -fx-shape: ""; /* removes the default shape */
+.main-scroll-pane .viewport {
     -fx-background-color: transparent;
 }
 
-.padel-place-card {
-    -fx-background-color: #1e1e1e;
-    -fx-background-radius: 15;
-    -fx-padding: 20;
-    -fx-spacing: 15;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 4);
-}
-
-.time-button {
-    -fx-background-color: transparent;
-    -fx-border-color: #444;
-    -fx-text-fill: white;
-    -fx-padding: 6 12;
-    -fx-background-radius: 20;
-    -fx-border-radius: 20;
-    -fx-font-size: 16px;
-    -fx-cursor: hand;
-}
-
-.time-button:hover {
-    -fx-background-color: #3A4A4B; /* Slightly lighter shade than the card background for contrast */
-    -fx-border-color: #FFFFFF; /* Keep the border white */
-    -fx-text-fill: white;
-    -fx-scale-x: 1.05; /* Slight scale-up effect */
-    -fx-scale-y: 1.05;
-    -fx-transition: all 0.2s ease; /* Smooth transition for the effect */
-}
-
-/* Pressed Effect for Time Button */
-.time-button:pressed {
-    -fx-background-color: #4A5A5B; /* Slightly lighter than hover for feedback */
-    -fx-border-color: #FFFFFF;
-    -fx-text-fill: white;
-    -fx-scale-x: 0.95; /* Slight scale-down effect to simulate press */
-    -fx-scale-y: 0.95;
-}
-
-/* Header Section Styles */
-.header-section {
+.main-scroll-pane .scroll-bar:vertical {
     -fx-background-color: transparent;
 }
 
-.tagline {
-    -fx-font-size: 36px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #FFFFFF;
-    -fx-font-family: "Arial";
-}
-
-/* Gym Class Card Styles */
-.gym-class-card {
-    -fx-background-color: #2E3538;
-    -fx-background-radius: 10;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 8, 0, 0, 2);
-    -fx-alignment: center;
-    -fx-cursor: hand;
-}
-
-.gym-class-card:hover {
-    -fx-background-color: #353C3F;
-    -fx-effect: dropshadow(gaussian, #FFCA28, 12, 0.2, 0, 0); /* Yellow glow on hover */
-    -fx-translate-y: -3; /* Slight lift effect */
-}
-
-.gym-class-name {
-    -fx-font-size: 20px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #FFFFFF;
-    -fx-padding: 0 0 5 0;
-    -fx-font-family: "Arial";
-}
-
-.gym-class-detail {
-    -fx-font-size: 12px;
-    -fx-text-fill: #B0BEC5;
-    -fx-padding: 2 0;
-    -fx-font-family: "Arial";
-}
-
-.gym-action-button {
-    -fx-background-color: #FFCA28; /* Yellow accent color */
-    -fx-background-radius: 20;
-    -fx-text-fill: #12171A;
-    -fx-font-size: 12px;
-    -fx-font-weight: bold;
-    -fx-padding: 8 20;
-    -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0, 0, 1);
-}
-
-.gym-action-button:hover {
-    -fx-background-color: #FFD54F;
-    -fx-scale-x: 1.05;
-    -fx-scale-y: 1.05;
-}
-
-.gym-action-button:pressed {
-    -fx-background-color: #FFB300;
-    -fx-scale-x: 0.95;
-    -fx-scale-y: 0.95;
-}
-
-/* Custom ComboBox Dropdown Styles */
-.custom-combo-box .list-view {
-    -fx-min-height: 200px; /* Minimum height for the dropdown */
-    -fx-max-height: 300px; /* Maximum height before scrolling */
-    -fx-pref-height: 200px; /* Preferred height */
-    -fx-background-color: #1c1c1c; /* Match booking-input background */
-    -fx-background-radius: 10; /* Slightly rounded corners */
-    -fx-border-color: rgba(255, 255, 255, 0.1); /* Match booking-container border */
-    -fx-border-width: 1;
-    -fx-border-radius: 10;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0, 0, 3); /* Match DatePicker popup shadow */
-}
-
-.custom-combo-box .list-cell {
-    -fx-background-color: #1c1c1c; /* Match ListView background */
-    -fx-text-fill: white; /* Match ComboBox text */
-    -fx-font-size: 16px; /* Match ComboBox font size */
-    -fx-font-family: "Arial"; /* Consistent font */
-    -fx-padding: 10; /* Comfortable padding for items */
-}
-
-.custom-combo-box .list-cell:hover {
-    -fx-background-color: #3a82f7; /* Match theme accent color (blue) */
-    -fx-text-fill: white;
-}
-
-.custom-combo-box .list-cell:selected {
-    -fx-background-color: #3a82f7; /* Match theme accent color */
-    -fx-text-fill: white;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 255, 0.3), 5, 0, 0, 1); /* Match DatePicker selected effect */
-}
-
-.custom-combo-box .list-cell:empty {
-    -fx-background-color: transparent; /* Hide empty cells */
-}
-
-.custom-combo-box .scroll-bar:vertical {
-    -fx-background-color: #1c1c1c; /* Match ListView background */
-}
-
-.custom-combo-box .scroll-bar:vertical .thumb {
-    -fx-background-color: #3a82f7; /* Match theme accent color */
+.main-scroll-pane .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
     -fx-background-radius: 5;
 }
 
-.custom-combo-box .scroll-bar:vertical .track {
-    -fx-background-color: #1c1c1c; /* Match ListView background */
+.main-scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(255, 255, 255, 0.3);
+    -fx-background-radius: 5;
+}
+
+.main-scroll-pane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.5);
+}
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 0;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .scroll-bar:horizontal .track {
+    -fx-background-color: transparent;
+    -fx-background-radius: 5;
+}
+
+.scroll-pane .scroll-bar:horizontal .thumb {
+    -fx-background-color: rgba(255, 255, 255, 0.3);
+    -fx-background-radius: 5;
+}
+
+.scroll-pane .scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Existing styles */
+.account-card {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-background-radius: 15;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0.2, 0, 5);
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 15;
+    -fx-border-width: 1;
+    -fx-max-width: 600;
+    -fx-alignment: center;
+}
+
+.account-info {
+    -fx-font-size: 16px;
+    -fx-text-fill: white;
+    -fx-font-family: "Arial";
+}
+
+/* New styles for editable fields and buttons */
+.account-field {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-family: "Arial";
+    -fx-padding: 5px;
+    -fx-background-radius: 5;
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-border-radius: 5;
+}
+
+.edit-button {
+    -fx-background-color: #3a82f7;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 8px 20px;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.edit-button:hover {
+    -fx-background-color: #2a62c7;
+}
+
+.save-button {
+    -fx-background-color: #28a745;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 8px 20px;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.save-button:hover {
+    -fx-background-color: #218838;
 }

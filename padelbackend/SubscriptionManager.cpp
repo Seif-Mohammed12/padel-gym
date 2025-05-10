@@ -1,38 +1,173 @@
 #include "SubscriptionManager.h"
-#include <fstream>
+#include "FileManager.h"
 #include <iomanip>
 #include <sstream>
-#include <ctime>
 #include <iostream>
 
-// Helper function to format time_t to string
-string formatTime(time_t timestamp) {
+std::string formatTime(time_t timestamp) {
     struct tm* timeinfo = localtime(&timestamp);
     char buffer[80];
-    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
-    return string(buffer);
+    strftime(buffer, sizeof(buffer), "%d-%m-%Y", timeinfo);
+    return std::string(buffer);
 }
 
-// Vector operations
+
+// Subscription class implementations
+Subscription::Subscription(const std::string& id, std::string plan, std::string dur, double p) {
+    memberId = id;
+    planName = plan;
+    duration = dur;
+    price = p;
+    startDate = time(nullptr);
+    isActive = true;
+    historyHead = nullptr;
+
+    int months = 1;
+    if (dur == "3_months") months = 3;
+    else if (dur == "6_months") months = 6;
+    else if (dur == "1_year") months = 12;
+    expiryDate = startDate + (months * 30 * 24 * 60 * 60);
+}
+
+Subscription::Subscription(const std::string& id, std::string plan, std::string dur, time_t start, time_t expiry, double p, bool active) {
+    memberId = id;
+    planName = plan;
+    duration = dur;
+    startDate = start;
+    expiryDate = expiry;
+    price = p;
+    isActive = active;
+    historyHead = nullptr;
+}
+
+bool Subscription::isExpired() const {
+    return time(nullptr) > expiryDate;
+}
+
+void Subscription::addToHistory(std::string plan, std::string dur, time_t start, time_t expiry, double p) {
+    auto* newNode = new SubscriptionHistoryNode(plan, dur, start, expiry, p);
+    newNode->next = historyHead;
+    historyHead = newNode;
+}
+
+void Subscription::renew(std::string newPlan, std::string newDuration, double newPrice) {
+    addToHistory(planName, duration, startDate, expiryDate, price);
+    planName = newPlan;
+    duration = newDuration;
+    price = newPrice;
+    startDate = time(nullptr);
+
+    int months = 1;
+    if (newDuration == "3_months") months = 3;
+    else if (newDuration == "6_months") months = 6;
+    else if (newDuration == "1_year") months = 12;
+    expiryDate = startDate + (months * 30 * 24 * 60 * 60);
+}
+
+json Subscription::toJson() const {
+    json history = json::array();
+    SubscriptionHistoryNode* current = historyHead;
+    while (current) {
+        history.push_back(current->toJson());
+        current = current->next;
+    }
+
+    // Convert time_t to human-readable date strings
+    std::string startDateStr = formatTime(startDate);
+    std::string expiryDateStr = formatTime(expiryDate);
+
+    return {
+            {"memberId", memberId},
+            {"planName", planName},
+            {"duration", duration},
+            {"startDate", startDateStr},  // Format date as string
+            {"expiryDate", expiryDateStr}, // Format date as string
+            {"price", price},
+            {"isActive", isActive},
+            {"history", history}
+    };
+}
+
+
+
+
+Subscription Subscription::fromJson(const json& j) {
+    // Parse the startDate and expiryDate from the string using std::istringstream
+    std::istringstream startDateStream(j.at("startDate").get<std::string>());
+    std::istringstream expiryDateStream(j.at("expiryDate").get<std::string>());
+
+    std::tm startTm = {};
+    std::tm expiryTm = {};
+
+    // Read the date using the specified format (same as in strptime)
+    startDateStream >> std::get_time(&startTm, "%d-%m-%Y");
+    expiryDateStream >> std::get_time(&expiryTm, "%d-%m-%Y");
+
+    // Convert std::tm to time_t
+    time_t startDate = mktime(&startTm);
+    time_t expiryDate = mktime(&expiryTm);
+
+    Subscription sub(
+            j.at("memberId").get<std::string>(),
+            j.at("planName").get<std::string>(),
+            j.at("duration").get<std::string>(),
+            startDate,
+            expiryDate,
+            j.at("price").get<double>(),
+            j.at("isActive").get<bool>()
+    );
+
+    if (j.contains("history")) {
+        for (const auto& historyJson : j.at("history")) {
+            auto* node = SubscriptionHistoryNode::fromJson(historyJson);
+            node->next = sub.historyHead;
+            sub.historyHead = node;
+        }
+    }
+
+    return sub;
+}
+
+
+
+Notification::Notification(const std::string& id, std::string msg, time_t expiry)
+        : memberId(id), message(msg), expiryDate(expiry) {}
+
+json Notification::toJson() const {
+    return {
+            {"memberId", memberId}, // Already a string
+            {"message", message},
+            {"expiryDate", static_cast<long long>(expiryDate)}
+    };
+}
+
+Notification Notification::fromJson(const json& j) {
+    return Notification(
+            j.at("memberId").get<std::string>(), // Changed to string
+            j.at("message").get<std::string>(),
+            static_cast<time_t>(j.at("expiryDate").get<long long>())
+    );
+}
+
+// SubscriptionManager class implementations
 void SubscriptionManager::addSubscription(const Subscription& sub) {
     subscriptions.push_back(sub);
     updateMemberIndex();
     saveToFile();
 }
 
-void SubscriptionManager::removeSubscription(int memberId) {
+void SubscriptionManager::removeSubscription(const std::string& memberId) {
     auto it = memberIndexMap.find(memberId);
     if (it != memberIndexMap.end()) {
         subscriptions.erase(subscriptions.begin() + it->second);
         updateMemberIndex();
         saveToFile();
-        cout << "Subscription removed successfully!" << endl;
+        std::cout << "Subscription removed successfully!" << std::endl;
     } else {
-        cout << "Member not found." << endl;
+        std::cout << "Member not found." << std::endl;
     }
 }
 
-// Hash table operations
 void SubscriptionManager::updateMemberIndex() {
     memberIndexMap.clear();
     for (int i = 0; i < subscriptions.size(); ++i) {
@@ -40,7 +175,7 @@ void SubscriptionManager::updateMemberIndex() {
     }
 }
 
-Subscription* SubscriptionManager::findSubscription(int memberId) {
+Subscription* SubscriptionManager::findSubscription(const std::string& memberId) {
     auto it = memberIndexMap.find(memberId);
     if (it != memberIndexMap.end()) {
         return &subscriptions[it->second];
@@ -48,188 +183,85 @@ Subscription* SubscriptionManager::findSubscription(int memberId) {
     return nullptr;
 }
 
-// Queue operations
 void SubscriptionManager::addNotification(const Notification& notif) {
     notificationQueue.push(notif);
 }
 
 void SubscriptionManager::processNotifications() {
-    cout << "\nProcessing " << notificationQueue.size() << " notifications...\n";
+    std::cout << "\nProcessing " << notificationQueue.size() << " notifications...\n";
     while (!notificationQueue.empty()) {
         Notification notif = notificationQueue.front();
         notificationQueue.pop();
-        
-        cout << "\n=== Notification ===\n";
-        cout << "Member ID: " << notif.getMemberId() << endl;
-        cout << "Message: " << notif.getMessage() << endl;
-        cout << "Expiry Date: " << formatTime(notif.getExpiryDate()) << endl;
+
+        std::cout << "\n=== Notification ===\n";
+        std::cout << "Member ID: " << notif.getMemberId() << std::endl;
+        std::cout << "Message: " << notif.getMessage() << std::endl;
+        std::cout << "Expiry Date: " << formatTime(notif.getExpiryDate()) << std::endl;
     }
 }
 
-// Check for expiring subscriptions
 void SubscriptionManager::checkRenewalReminders() {
     time_t now = time(nullptr);
     for (const auto& sub : subscriptions) {
         time_t expiry = sub.getExpiryDate();
-        
-        // Check if subscription expires in 7 days
+
         if (expiry - now <= 7 * 24 * 60 * 60 && !sub.isExpired()) {
             double discount = (expiry - now <= 14 * 24 * 60 * 60) ? 0.1 : 0.0;
-            string message = "Your subscription expires in " + 
-                           to_string((expiry - now) / (24 * 60 * 60)) + 
-                           " days. Early renewal discount: " + 
-                           to_string(discount * 100) + "%";
-            
+            std::string message = "Your subscription expires in " +
+                                  std::to_string((expiry - now) / (24 * 60 * 60)) +
+                                  " days. Early renewal discount: " +
+                                  std::to_string(discount * 100) + "%";
+
             notificationQueue.push(Notification(
-                sub.getMemberId(), message, expiry
+                    sub.getMemberId(), message, expiry
             ));
         }
     }
     processNotifications();
 }
 
-// Print all subscriptions
 void SubscriptionManager::printAllSubscriptions() {
-    cout << "\n=== All Subscriptions ===\n";
+    std::cout << "\n=== All Subscriptions ===\n";
     for (const auto& sub : subscriptions) {
-        cout << "Member ID: " << sub.getMemberId() << endl;
-        cout << "Plan: " << sub.getPlanName() << endl;
-        cout << "Duration: " << sub.getDuration() << endl;
-        cout << "Price: $" << fixed << setprecision(2) << sub.getPrice() << endl;
-        cout << "Start Date: " << formatTime(sub.getStartDate()) << endl;
-        cout << "Expiry Date: " << formatTime(sub.getExpiryDate()) << endl;
-        cout << "-------------------\n";
+        std::cout << "Member ID: " << sub.getMemberId() << std::endl;
+        std::cout << "Plan: " << sub.getPlanName() << std::endl;
+        std::cout << "Duration: " << sub.getDuration() << std::endl;
+        std::cout << "Price: $" << std::fixed << std::setprecision(2) << sub.getPrice() << std::endl;
+        std::cout << "Start Date: " << formatTime(sub.getStartDate()) << std::endl;
+        std::cout << "Expiry Date: " << formatTime(sub.getExpiryDate()) << std::endl;
+        std::cout << "-------------------\n";
     }
 }
 
-void SubscriptionManager::saveToFile() {
-    ofstream file(subscriptionsFile);
-    if (file.is_open()) {
-        // Save number of subscriptions
-        file << subscriptions.size() << "\n";
-        
-        // Save each subscription
-        for (const auto& sub : subscriptions) {
-            file << sub.getMemberId() << "\n";
-            file << sub.getPlanName() << "\n";
-            file << sub.getDuration() << "\n";
-            file << sub.getStartDate() << "\n";
-            file << sub.getExpiryDate() << "\n";
-            file << sub.getPrice() << "\n";
-            file << sub.getIsActive() << "\n";
-
-            // Save history
-            SubscriptionHistoryNode* current = sub.getHistoryHead();
-            int historyCount = 0;
-            while (current) {
-                historyCount++;
-                current = current->next;
-            }
-            file << historyCount << "\n";
-
-            current = sub.getHistoryHead();
-            while (current) {
-                file << current->planName << "\n";
-                file << current->duration << "\n";
-                file << current->startDate << "\n";
-                file << current->expiryDate << "\n";
-                file << current->price << "\n";
-                current = current->next;
-            }
-        }
-        file.close();
-        cout << "Subscriptions saved to file successfully!" << endl;
-    } else {
-        cout << "Error: Could not open file for writing." << endl;
-    }
-}
-
-void SubscriptionManager::loadFromFile() {
-    ifstream file(subscriptionsFile);
-    if (file.is_open()) {
-        subscriptions.clear();
-        
-        // Read number of subscriptions
-        int count;
-        file >> count;
-        file.ignore();  // Skip newline
-        
-        // Read each subscription
-        for (int i = 0; i < count; i++) {
-            int memberId;
-            string planName, duration;
-            time_t startDate, expiryDate;
-            double price;
-            bool isActive;
-
-            file >> memberId;
-            file.ignore();
-            getline(file, planName);
-            getline(file, duration);
-            file >> startDate >> expiryDate >> price >> isActive;
-            file.ignore();
-
-            // Create subscription
-            Subscription sub(memberId, planName, duration, price);
-
-            // Load history
-            int historyCount;
-            file >> historyCount;
-            file.ignore();
-
-            for (int j = 0; j < historyCount; j++) {
-                string plan, dur;
-                time_t start, expiry;
-                double p;
-
-                getline(file, plan);
-                getline(file, dur);
-                file >> start >> expiry >> p;
-                file.ignore();
-
-                sub.addToHistory(plan, dur, start, expiry, p);
-            }
-
-            subscriptions.push_back(sub);
-        }
-        
-        updateMemberIndex();
-        file.close();
-        cout << "Subscriptions loaded from file successfully!" << endl;
-    } else {
-        cout << "No existing subscription file found. Starting with empty list." << endl;
-    }
-}
-
-void SubscriptionManager::printSubscriptionHistory(int memberId) {
+void SubscriptionManager::printSubscriptionHistory(const std::string& memberId) {
     auto it = memberIndexMap.find(memberId);
     if (it != memberIndexMap.end()) {
         const Subscription& sub = subscriptions[it->second];
-        
-        cout << "\n=== Subscription History for Member " << memberId << " ===\n";
-        cout << "Current Plan: " << sub.getPlanName() << endl;
-        cout << "Current Duration: " << sub.getDuration() << endl;
-        cout << "Current Price: $" << fixed << setprecision(2) << sub.getPrice() << endl;
-        cout << "Expiry Date: " << formatTime(sub.getExpiryDate()) << endl;
-        
-        cout << "\nHistory:\n";
+
+        std::cout << "\n=== Subscription History for Member " << memberId << " ===\n";
+        std::cout << "Current Plan: " << sub.getPlanName() << std::endl;
+        std::cout << "Current Duration: " << sub.getDuration() << std::endl;
+        std::cout << "Current Price: $" << std::fixed << std::setprecision(2) << sub.getPrice() << std::endl;
+        std::cout << "Expiry Date: " << formatTime(sub.getExpiryDate()) << std::endl;
+
+        std::cout << "\nHistory:\n";
         SubscriptionHistoryNode* current = sub.getHistoryHead();
         while (current) {
-            cout << "Plan: " << current->planName << endl;
-            cout << "Duration: " << current->duration << endl;
-            cout << "Price: $" << fixed << setprecision(2) << current->price << endl;
-            cout << "Start Date: " << formatTime(current->startDate) << endl;
-            cout << "Expiry Date: " << formatTime(current->expiryDate) << endl;
-            cout << "-------------------\n";
+            std::cout << "Plan: " << current->planName << std::endl;
+            std::cout << "Duration: " << current->duration << std::endl;
+            std::cout << "Price: $" << std::fixed << std::setprecision(2) << current->price << std::endl;
+            std::cout << "Start Date: " << formatTime(current->startDate) << std::endl;
+            std::cout << "Expiry Date: " << formatTime(current->expiryDate) << std::endl;
+            std::cout << "-------------------\n";
             current = current->next;
         }
     } else {
-        cout << "Member not found." << endl;
+        std::cout << "Member not found." << std::endl;
     }
 }
 
-vector<Subscription> SubscriptionManager::getExpiringSubscriptions(int days) {
-    vector<Subscription> expiring;
+std::vector<Subscription> SubscriptionManager::getExpiringSubscriptions(int days) {
+    std::vector<Subscription> expiring;
     time_t now = time(nullptr);
     time_t threshold = now + (days * 24 * 60 * 60);
 
@@ -242,71 +274,57 @@ vector<Subscription> SubscriptionManager::getExpiringSubscriptions(int days) {
 }
 
 void SubscriptionManager::printExpiringSubscriptions(int days) {
-    vector<Subscription> expiring = getExpiringSubscriptions(days);
-    
-    cout << "\n=== Subscriptions Expiring in " << days << " Days ===\n";
+    std::vector<Subscription> expiring = getExpiringSubscriptions(days);
+
+    std::cout << "\n=== Subscriptions Expiring in " << days << " Days ===\n";
     for (const auto& sub : expiring) {
-        cout << "Member ID: " << sub.getMemberId() << endl;
-        cout << "Plan: " << sub.getPlanName() << endl;
-        cout << "Expiry Date: " << formatTime(sub.getExpiryDate()) << endl;
-        cout << "-------------------\n";
+        std::cout << "Member ID: " << sub.getMemberId() << std::endl;
+        std::cout << "Plan: " << sub.getPlanName() << std::endl;
+        std::cout << "Expiry Date: " << formatTime(sub.getExpiryDate()) << std::endl;
+        std::cout << "-------------------\n";
     }
 }
 
-void SubscriptionManager::cancelSubscription(int memberId) {
+void SubscriptionManager::cancelSubscription(const std::string& memberId) {
     auto it = memberIndexMap.find(memberId);
     if (it != memberIndexMap.end()) {
         subscriptions[it->second].addToHistory(
-            subscriptions[it->second].getPlanName(),
-            subscriptions[it->second].getDuration(),
-            subscriptions[it->second].getStartDate(),
-            subscriptions[it->second].getExpiryDate(),
-            subscriptions[it->second].getPrice()
+                subscriptions[it->second].getPlanName(),
+                subscriptions[it->second].getDuration(),
+                subscriptions[it->second].getStartDate(),
+                subscriptions[it->second].getExpiryDate(),
+                subscriptions[it->second].getPrice()
         );
         subscriptions.erase(subscriptions.begin() + it->second);
         updateMemberIndex();
         saveToFile();
-        cout << "Subscription cancelled successfully!" << endl;
+        std::cout << "Subscription cancelled successfully!" << std::endl;
     } else {
-        cout << "Member not found." << endl;
+        std::cout << "Member not found." << std::endl;
     }
 }
 
-// Example usage
-int main() {
-    SubscriptionManager manager;
-    
-    // Load existing subscriptions from file
-    manager.loadFromFile();
-
-    // Add some subscriptions (Vector operation)
-    Subscription sub1(1, "Basic Plan", "1_month", 29.99);
-    Subscription sub2(2, "Pro Plan", "3_months", 84.99);
-    Subscription sub3(3, "Elite Plan", "6_months", 161.99);
-
-    manager.addSubscription(sub1);
-    manager.addSubscription(sub2);
-    manager.addSubscription(sub3);
-
-    // Print all subscriptions
-    manager.printAllSubscriptions();
-
-    // Find a subscription (Hash table operation)
-    Subscription* found = manager.findSubscription(2);
-    if (found) {
-        cout << "\nFound subscription for member " << found->getMemberId() << endl;
-        cout << "Plan: " << found->getPlanName() << endl;
+json SubscriptionManager::getSubscriptionsAsJson() const {
+    json jsonSubscriptions = json::array();
+    for (const auto& sub : subscriptions) {
+        jsonSubscriptions.push_back(sub.toJson());
     }
+    return jsonSubscriptions;
+}
 
-    // Check for expiring subscriptions and process notifications (Queue operation)
-    manager.checkRenewalReminders();
+void SubscriptionManager::loadSubscriptionsFromJson(const json& data) {
+    subscriptions.clear();
+    for (const auto& subJson : data) {
+        subscriptions.push_back(Subscription::fromJson(subJson));
+    }
+    updateMemberIndex();
+}
 
-    // Remove a subscription
-    manager.removeSubscription(1);
-    manager.printAllSubscriptions();
+void SubscriptionManager::saveToFile() {
+    FileManager::save(getSubscriptionsAsJson(), subscriptionsFile);
+}
 
-    // Save all changes to file
-    manager.saveToFile();
-
-    return 0;
-} 
+void SubscriptionManager::loadFromFile() {
+    json data = FileManager::load(subscriptionsFile);
+    loadSubscriptionsFromJson(data);
+}

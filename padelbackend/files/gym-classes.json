@@ -1,7 +1,7 @@
 [
     {
         "capacity": 12,
-        "currentParticipants": 8,
+        "currentParticipants": 1,
         "imagePath": "file:C:\\Users\\seife\\padel-gym\\images\\yoga.jpg",
         "instructor": "Sara Ahmed",
         "name": "Yoga Flow",
@@ -12,7 +12,7 @@
     },
     {
         "capacity": 1,
-        "currentParticipants": 1,
+        "currentParticipants": 0,
         "imagePath": "file:C:\\Users\\seife\\padel-gym\\images\\cardio.jpg",
         "instructor": "Mohamed Ali",
         "name": "Cardio Blast",
@@ -23,7 +23,7 @@
     },
     {
         "capacity": 1,
-        "currentParticipants": 0,
+        "currentParticipants": 1,
         "imagePath": "file:C:\\Users\\seife\\padel-gym\\images\\strength.jpg",
         "instructor": "Laila Hassan",
         "name": "Strength Training",

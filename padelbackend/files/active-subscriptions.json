@@ -1,0 +1,12 @@
+[
+    {
+        "duration": "1_month",
+        "expiryDate": "09-06-2025",
+        "history": [],
+        "isActive": true,
+        "memberId": "MEM589493",
+        "planName": "Elite Plan",
+        "price": 79.99,
+        "startDate": "10-05-2025"
+    }
+]

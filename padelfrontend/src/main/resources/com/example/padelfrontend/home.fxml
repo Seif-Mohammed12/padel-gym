@@ -1,21 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
-<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane fx:id="homeRoot" styleClass="root" stylesheets="@home.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.padelfrontend.HomeController">
-
     <!-- Top Navigation Bar -->
     <top>
         <HBox fx:id="navbar" alignment="CENTER_LEFT" spacing="30" styleClass="navbar">
@@ -24,63 +17,47 @@
             <Button fx:id="bookingButton" onAction="#goToBooking" prefHeight="70.0" styleClass="nav-button" text="Booking" />
             <Button fx:id="subscriptionButton" onAction="#goToSubscription" prefHeight="70.0" styleClass="nav-button" text="Subscription" />
             <Button fx:id="gymButton" onAction="#goToGym" prefHeight="70.0" styleClass="nav-button" text="Gym" />
-
             <Pane HBox.hgrow="ALWAYS" />
-            <Button onAction="#gotoLogin" styleClass=" login-button" text="Login" />
+            <Button fx:id="loginButton" onAction="#goToLogin" styleClass="login-button" text="Login" />
         </HBox>
     </top>
 
-    <!-- Center Booking Container -->
+    <!-- Center Content Wrapped in ScrollPane -->
     <center>
-        <VBox alignment="CENTER" spacing="30">
-            <Label styleClass="booking-title" text="Find Center &amp; Available Times With Ease" />
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="main-scroll-pane" vbarPolicy="AS_NEEDED">
+            <VBox alignment="CENTER" spacing="50" styleClass="main-content">
+                <!-- Hero Section -->
+                <VBox alignment="CENTER" maxWidth="800" spacing="20" styleClass="hero-card">
+                    <Label styleClass="hero-title" text="Welcome to Padel Gym" />
+                    <Label styleClass="hero-tagline" text="Your Ultimate Fitness Destination" />
+                    <Button fx:id="joinButton" onAction="#goToSignUp" styleClass="join-button" text="Join Now" />
+                </VBox>
 
-            <HBox alignment="CENTER" maxWidth="1100" spacing="40" styleClass="booking-container">
-                <TextField fx:id="sportComboBox" alignment="CENTER" editable="false" prefWidth="180.0" promptText="All sports" styleClass="booking-input" text="Padel" />
+                <!-- Featured Padel Centers -->
+                <VBox alignment="CENTER" spacing="20">
+                    <Label styleClass="section-title" text="Explore Our Padel Centers" />
+                    <ScrollPane fitToHeight="true" hbarPolicy="ALWAYS" prefHeight="300" styleClass="scroll-pane">
+                        <HBox fx:id="centersContainer" alignment="CENTER" spacing="20" styleClass="centers-container">
+                            <!-- Dynamically populated via controller -->
+                        </HBox>
+                    </ScrollPane>
+                </VBox>
 
-                <StackPane alignment="CENTER_RIGHT">
-                    <DatePicker fx:id="datePicker" promptText="Choose Date..." styleClass="booking-input">
-                  <opaqueInsets>
-                     <Insets />
-                  </opaqueInsets>
-                  <StackPane.margin>
-                     <Insets />
-                  </StackPane.margin></DatePicker>
-                    <ImageView fx:id="calendaricon" fitHeight="20" fitWidth="20" onMouseClicked="#openCalendar" pickOnBounds="true" preserveRatio="true">
-                        <image>
-                            <Image url="@../../../icons/calendar.png" />
-                        </image>
-                  <StackPane.margin>
-                     <Insets right="15.0" />
-                  </StackPane.margin>
-                    </ImageView>
+                <!-- Featured Gym Classes -->
+                <VBox alignment="CENTER" spacing="20">
+                    <Label styleClass="section-title" text="Discover Our Gym Classes" />
+                    <HBox fx:id="classesContainer" alignment="CENTER" spacing="20" styleClass="classes-container">
+                        <!-- Dynamically populated via controller -->
+                    </HBox>
+                </VBox>
 
-                </StackPane>
-
-                <StackPane alignment="CENTER_RIGHT">
-                    <ComboBox fx:id="centerSearchField" editable="true" prefWidth="250.0" promptText="Search center here..." style="-fx-prompt-text-fill: white; -fx-text-fill: white;" styleClass="booking-input">
-                        <opaqueInsets>
-                            <Insets />
-                        </opaqueInsets>
-                        <StackPane.margin>
-                            <Insets />
-                        </StackPane.margin>
-                    </ComboBox>
-
-                    <ImageView fx:id="dropdownicon" fitHeight="20" fitWidth="20" pickOnBounds="true" preserveRatio="true">
-                        <image>
-                            <Image url="@../../../icons/arrow.png" />
-                        </image>
-                        <StackPane.margin>
-                            <Insets right="15.0" />
-                        </StackPane.margin>
-                    </ImageView>
-                </StackPane>
-
-
-                <Button styleClass="explore-button" text="Explore" />
-            </HBox>
-        </VBox>
+                <!-- Subscription Teaser -->
+                <VBox alignment="CENTER" maxWidth="650.0" prefHeight="208.0" prefWidth="650.0" spacing="20" styleClass="subscription-teaser">
+                    <Label styleClass="section-title" text="Choose Your Perfect Plan" />
+                    <Label styleClass="teaser-text" text="Unlock exclusive benefits with our subscription plans tailored for you." />
+                    <Button fx:id="viewPlansButton" onAction="#goToSubscription" styleClass="view-plans-button" text="View Plans" />
+                </VBox>
+            </VBox>
+        </ScrollPane>
     </center>
-
 </BorderPane>

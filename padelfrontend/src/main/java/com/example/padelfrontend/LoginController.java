@@ -35,15 +35,18 @@ public class LoginController {
     @FXML
     private Label responseLabel;
 
-    @FXML private TextField visiblePasswordField;
-    @FXML private ImageView togglePasswordIcon;
+    @FXML
+    private TextField visiblePasswordField;
+
+    @FXML
+    private ImageView togglePasswordIcon;
 
     private boolean isPasswordVisible = false;
+    private static final Duration TRANSITION_DURATION = Duration.millis(400);
 
     @FXML
     public void initialize() {
         togglePasswordIcon.setImage(new Image(getClass().getResourceAsStream("/icons/hidden.png")));
-
     }
 
     @FXML
@@ -71,7 +74,6 @@ public class LoginController {
         }
     }
 
-
     @FXML
     private void handleLoginButton() {
         String username = usernameField.getText().trim();
@@ -87,9 +89,6 @@ public class LoginController {
 
         sendLoginRequest(username, password);
     }
-
-
-
 
     private void sendLoginRequest(String username, String password) {
         new Thread(() -> {
@@ -118,21 +117,53 @@ public class LoginController {
                 javafx.application.Platform.runLater(() -> {
                     try {
                         String status = jsonResponse.getString("status");
-                        String message = jsonResponse.optString("message", "No message provided"); // Use optString to avoid exception if "message" is missing
+                        String message = jsonResponse.optString("message", "No message provided");
                         responseLabel.setText(message);
 
                         if (status.equals("success")) {
                             responseLabel.getStyleClass().add("success");
+
+                            // Extract user data and store in AppContext
+                            JSONObject userData = jsonResponse.getJSONObject("data");
+                            String loggedInUsername = userData.getString("username");
+                            String memberId = userData.getString("memberId");
+                            String firstName = userData.getString("firstName");
+                            String lastName = userData.getString("lastName");
+                            String role = userData.getString("role");
+                            String phoneNumber = userData.optString("phoneNumber", "");
+                            String email = userData.optString("email", "");
+
+                            // Store data in AppContext
+                            AppContext context = AppContext.getInstance();
+                            context.setUsername(loggedInUsername);
+                            context.setMemberId(memberId);
+                            context.setFirstName(firstName);
+                            context.setLastName(lastName);
+                            context.setRole(role);
+                            context.setPhoneNumber(phoneNumber);
+                            context.setEmail(email);
+
                             try {
-                                // Load success page
-                                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/padelfrontend/SuccessPage.fxml"));
-                                Scene successScene = new Scene(loader.load());
-                                Stage stage = (Stage) usernameField.getScene().getWindow();
-                                stage.setScene(successScene);
-                                stage.setTitle("Login Success");
-                                stage.setMaximized(true); // Keep full-screen
+                                // Load home page
+                                Parent homePage = FXMLLoader.load(getClass().getResource("home.fxml"));
+                                Scene currentScene = usernameField.getScene();
+                                Parent currentPage = currentScene.getRoot();
+
+                                FadeTransition fadeOut = new FadeTransition(Duration.millis(500), currentPage);
+                                fadeOut.setFromValue(1.0);
+                                fadeOut.setToValue(0.0);
+
+                                fadeOut.setOnFinished(e -> {
+                                    currentScene.setRoot(homePage);
+                                    FadeTransition fadeIn = new FadeTransition(Duration.millis(500), homePage);
+                                    fadeIn.setFromValue(0.0);
+                                    fadeIn.setToValue(1.0);
+                                    fadeIn.play();
+                                });
+
+                                fadeOut.play();
                             } catch (Exception e) {
-                                responseLabel.setText("Error loading success page: " + e.getMessage());
+                                responseLabel.setText("Error loading home page: " + e.getMessage());
                                 responseLabel.getStyleClass().remove("success");
                             }
                         } else {
@@ -154,42 +185,43 @@ public class LoginController {
         }).start();
     }
 
-
     @FXML
-    private void goToSignUp(ActionEvent event) {
+    private void goToSignUp() {
+        navigateToPage("SignUpPage.fxml", 1);
+    }
+    @FXML
+    private void goToForgotPassword() {
+        navigateToPage("ForgotPasswordPage.fxml", -1);
+    }
+
+    private void navigateToPage(String fxmlFile, int direction) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("SignUpPage.fxml"));
-            Parent signUpPage = loader.load();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
+            Parent newPage = loader.load();
 
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Stage stage = (Stage) usernameField.getScene().getWindow();
             Scene currentScene = stage.getScene();
-            Parent loginPage = currentScene.getRoot();
+            Parent currentPage = currentScene.getRoot();
 
-            StackPane transitionPane = new StackPane(loginPage, signUpPage);
-            signUpPage.translateXProperty().set(currentScene.getWidth());
-            currentScene.setRoot(transitionPane); // Set temp container first
+            StackPane transitionPane = new StackPane(currentPage, newPage);
+            newPage.translateXProperty().set(direction * currentScene.getWidth());
+            currentScene.setRoot(transitionPane);
 
-            TranslateTransition slideOut = new TranslateTransition(Duration.millis(400), loginPage);
-            slideOut.setToX(-currentScene.getWidth());
+            TranslateTransition slideOut = new TranslateTransition(TRANSITION_DURATION, currentPage);
+            slideOut.setToX(-direction * currentScene.getWidth());
 
-            TranslateTransition slideIn = new TranslateTransition(Duration.millis(400), signUpPage);
+            TranslateTransition slideIn = new TranslateTransition(TRANSITION_DURATION, newPage);
             slideIn.setToX(0);
 
             slideIn.setOnFinished(e -> {
-                transitionPane.getChildren().clear(); // remove both nodes from stackpane
-                currentScene.setRoot(signUpPage); // now it's safe to set the new root
+                transitionPane.getChildren().clear();
+                currentScene.setRoot(newPage);
             });
 
             slideOut.play();
             slideIn.play();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-
-
-
-
 }

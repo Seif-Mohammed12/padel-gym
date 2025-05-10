@@ -6,9 +6,13 @@
 using namespace std;
 
 // Relative paths to the root directory (one level up from cmake-build-debug)
-const string DATA_FILE = "../data.json";
-const string GYM_CLASSES_FILE = "../gym-classes.json";
-const string PADEL_CLASSES_FILE = "../padel-classes.json";
+const string DATA_FILE = "../files/data.json";
+const string GYM_CLASSES_FILE = "../files/gym-classes.json";
+const string PADEL_CLASSES_FILE = "../files/padel-classes.json";
+const string SUBSCRIPTIONS_FILE = "../files/subscriptions.json";
+const string ACTIVE_SUBSCRIPTIONS_FILE = "../files/active-subscriptions.json"; // New file for active subscriptions
+const string MEMBERS_FILE = "../files/members.json";
+const string STAFF_FILE = "../files/staff.json";
 
 void FileManager::save(const json& data, const string& filename) {
     if (!data.is_array()) {
@@ -23,6 +27,14 @@ void FileManager::save(const json& data, const string& filename) {
         filepath = GYM_CLASSES_FILE;
     } else if (filename == "padel-classes.json") {
         filepath = PADEL_CLASSES_FILE;
+    } else if (filename == "subscriptions.json") {
+        filepath = SUBSCRIPTIONS_FILE;
+    } else if (filename == "active-subscriptions.json") { // Added new file
+        filepath = ACTIVE_SUBSCRIPTIONS_FILE;
+    } else if (filename == "members.json") {
+        filepath = MEMBERS_FILE;
+    } else if (filename == "staff.json") {
+        filepath = STAFF_FILE;
     } else {
         std::cerr << "Unknown filename: " << filename << std::endl;
         return;
@@ -46,6 +58,14 @@ json FileManager::load(const string& filename) {
         filepath = GYM_CLASSES_FILE;
     } else if (filename == "padel-classes.json") {
         filepath = PADEL_CLASSES_FILE;
+    } else if (filename == "subscriptions.json") {
+        filepath = SUBSCRIPTIONS_FILE;
+    } else if (filename == "active-subscriptions.json") { // Added new file
+        filepath = ACTIVE_SUBSCRIPTIONS_FILE;
+    } else if (filename == "members.json") {
+        filepath = MEMBERS_FILE;
+    } else if (filename == "staff.json") {
+        filepath = STAFF_FILE;
     } else {
         std::cerr << "Unknown filename: " << filename << std::endl;
         return json::array();
