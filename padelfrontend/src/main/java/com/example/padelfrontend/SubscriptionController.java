@@ -65,6 +65,7 @@ public class SubscriptionController {
     // State
     private String selectedDuration = "1_month"; // Default duration
     private JSONArray currentPlansArray; // Store the plans for refreshing
+    private boolean isFormCanceled = false; // Flag to track cancellation
 
     @FXML
     public void initialize() {
@@ -294,64 +295,92 @@ public class SubscriptionController {
 
             rootContainer.getChildren().add(formOverlay);
 
-            formController.setOnConfirmCallback(details -> {
-                try {
-                    // Step 1: Send add_member request
-                    JSONObject addMemberRequest = new JSONObject();
-                    addMemberRequest.put("action", "add_member");
-                    JSONObject memberData = new JSONObject();
-                    memberData.put("memberId", details.getMemberId());
-                    memberData.put("name", details.getFirstName() + " " + details.getLastName());
-                    memberData.put("phoneNumber", details.getPhoneNumber());
-                    memberData.put("dob", details.getDob());
-                    memberData.put("subscription", planName);
-                    addMemberRequest.put("data", memberData);
-
-                    String addMemberResponse = sendRequestToServer(addMemberRequest.toString());
-                    JSONObject addMemberJson = new JSONObject(addMemberResponse);
-
-                    if (!addMemberJson.getString("status").equals("success")) {
-                        showAlert("Error", "Failed to add member: " + addMemberJson.getString("message"));
-                        return;
-                    }
-
-                    // Step 2: Send subscribe request
-                    JSONObject subscribeRequest = new JSONObject();
-                    subscribeRequest.put("action", "subscribe");
-                    JSONObject subscribeData = new JSONObject();
-                    subscribeData.put("memberId", details.getMemberId());
-                    subscribeData.put("firstName", details.getFirstName());
-                    subscribeData.put("lastName", details.getLastName());
-                    subscribeData.put("phoneNumber", details.getPhoneNumber());
-                    subscribeData.put("dob", details.getDob());
-                    subscribeData.put("planName", planName);
-                    subscribeData.put("duration", selectedDuration);
-                    subscribeRequest.put("data", subscribeData);
-
-                    String subscribeResponse = sendRequestToServer(subscribeRequest.toString());
-                    JSONObject subscribeJson = new JSONObject(subscribeResponse);
-
-                    if (subscribeJson.getString("status").equals("success")) {
-                        // Store subscription in AppContext
-                        context.setSubscribedPlanName(planName);
-                        context.setSubscribedDuration(selectedDuration);
-
-                        showAlert("Success", "Successfully subscribed to " + planName + "!");
-                        refreshPlans(); // Refresh UI to update button
-                    } else {
-                        showAlert("Error", subscribeJson.getString("message"));
-                    }
-                } catch (Exception e) {
-                    showAlert("Error", "Failed to subscribe: " + e.getMessage());
-                }
-            });
-
+            // Set the subscription page to disable interaction while the form is open
             Parent subscriptionPage = (Parent) rootContainer.getChildren().get(0);
             formController.setSubscriptionPage(subscriptionPage);
+
+            // Set cancellation callback
+            formController.setOnCancelCallback(() -> {
+                isFormCanceled = true; // Mark as canceled
+            });
+
+            // Listen for the form overlay being removed (i.e., form closed)
+            formOverlay.parentProperty().addListener((obs, oldParent, newParent) -> {
+                if (newParent == null) { // Form was closed
+                    if (isFormCanceled) {
+                        isFormCanceled = false; // Reset flag for next use
+                        return; // Skip subscription logic and alert
+                    }
+
+                    try {
+                        // Retrieve data from AppContext
+                        String firstName = context.getFirstName();
+                        String lastName = context.getLastName();
+                        String phoneNumber = context.getPhoneNumber();
+                        String dob = context.getDob();
+                        String memberId = context.getMemberId();
+
+                        // Validate that required data is present
+                        if (firstName == null || lastName == null || phoneNumber == null || dob == null || memberId == null) {
+                            showAlert("Error", "Incomplete user data. Please fill out the subscription form.");
+                            return;
+                        }
+
+                        // Step 1: Send add_member request
+                        JSONObject addMemberRequest = new JSONObject();
+                        addMemberRequest.put("action", "add_member");
+                        JSONObject memberData = new JSONObject();
+                        memberData.put("memberId", memberId);
+                        memberData.put("name", firstName + " " + lastName);
+                        memberData.put("phoneNumber", phoneNumber);
+                        memberData.put("dob", dob);
+                        memberData.put("subscription", planName);
+                        addMemberRequest.put("data", memberData);
+
+                        String addMemberResponse = sendRequestToServer(addMemberRequest.toString());
+                        JSONObject addMemberJson = new JSONObject(addMemberResponse);
+
+                        if (!addMemberJson.getString("status").equals("success")) {
+                            showAlert("Error", "Failed to add member: " + addMemberJson.getString("message"));
+                            return;
+                        }
+
+                        // Step 2: Send subscribe request
+                        JSONObject subscribeRequest = new JSONObject();
+                        subscribeRequest.put("action", "subscribe");
+                        JSONObject subscribeData = new JSONObject();
+                        subscribeData.put("memberId", memberId);
+                        subscribeData.put("firstName", firstName);
+                        subscribeData.put("lastName", lastName);
+                        subscribeData.put("phoneNumber", phoneNumber);
+                        subscribeData.put("dob", dob);
+                        subscribeData.put("planName", planName);
+                        subscribeData.put("duration", selectedDuration);
+                        subscribeRequest.put("data", subscribeData);
+
+                        String subscribeResponse = sendRequestToServer(subscribeRequest.toString());
+                        JSONObject subscribeJson = new JSONObject(subscribeResponse);
+
+                        if (subscribeJson.getString("status").equals("success")) {
+                            // Store subscription in AppContext
+                            context.setSubscribedPlanName(planName);
+                            context.setSubscribedDuration(selectedDuration);
+
+                            showAlert("Success", "Successfully subscribed to " + planName + "!");
+                            refreshPlans(); // Refresh UI to update button
+                        } else {
+                            showAlert("Error", subscribeJson.getString("message"));
+                        }
+                    } catch (Exception e) {
+                        showAlert("Error", "Failed to subscribe: " + e.getMessage());
+                    }
+                }
+            });
 
             formOverlay.toFront();
         } catch (Exception e) {
             showAlert("Error", "Failed to open subscription form: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

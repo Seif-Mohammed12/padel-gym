@@ -10,6 +10,8 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
+
+<?import jfxtras.scene.control.LocalDatePicker?>
 <StackPane stylesheets="@SubscriptionFormStyles.css" fx:id="overlayPane" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.padelfrontend.SubscriptionFormController">
 
     <!-- Semi-transparent background -->
@@ -30,8 +32,10 @@
             <Label text="Phone Number"/>
             <TextField fx:id="phoneNumberField" promptText="Enter your phone number"/>
 
-            <Label text="Date of Birth (DD-MM-YYYY)"/>
-            <DatePicker fx:id="dobPicker" promptText="Select your date of birth"/>
+            <VBox fx:id="dobContainer" alignment="CENTER_LEFT" spacing="5">
+                <Label text="Date of Birth"/>
+                <DatePicker fx:id="dobPicker"/>
+            </VBox>
         </VBox>
 
         <HBox spacing="10" alignment="CENTER">
