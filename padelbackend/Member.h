@@ -9,8 +9,19 @@
 
 using json = nlohmann::json;
 
-class Member {
+//=============================================================================
+// Member Class Definition
+// Manages individual member data and operations
+//=============================================================================
+
+class Member
+{
 public:
+    //=============================================================================
+    // Member Variables
+    // Core member information and status
+    //=============================================================================
+
     std::string id;
     std::string firstName;
     std::string lastName;
@@ -22,12 +33,23 @@ public:
     bool isActive;
     std::vector<Workout> workouts;
 
+    //=============================================================================
+    // Constructors
+    // Initialize member objects with default values
+    //=============================================================================
+
     Member() : isActive(true) {}
 
-    void addMember(const std::string& i, const std::string& fname, const std::string& lname,
-                   const std::string& email, const std::string& phone, const std::string& username,
-                   const std::string& d, const json& s) {
-        id = i; // Store as string
+    //=============================================================================
+    // Member Management Methods
+    // Core functionality for member data manipulation
+    //=============================================================================
+
+    void addMember(const std::string &i, const std::string &fname, const std::string &lname,
+                   const std::string &email, const std::string &phone, const std::string &username,
+                   const std::string &d, const json &s)
+    {
+        id = i;
         firstName = fname;
         lastName = lname;
         this->email = email;
@@ -38,7 +60,13 @@ public:
         isActive = true;
     }
 
-    void showMember() {
+    //=============================================================================
+    // Display Methods
+    // Output formatting for member information
+    //=============================================================================
+
+    void showMember()
+    {
         std::cout << "ID: " << id
                   << ", First Name: " << firstName
                   << ", Last Name: " << lastName
@@ -51,21 +79,29 @@ public:
                   << ", Workouts: " << workouts.size() << std::endl;
     }
 
-    json toJson() const {
+    //=============================================================================
+    // Serialization Methods
+    // JSON conversion for data persistence
+    //=============================================================================
+
+    json toJson() const
+    {
         json j = {
-                {"id", id},
-                {"firstName", firstName},
-                {"lastName", lastName},
-                {"email", email},
-                {"phoneNumber", phoneNumber},
-                {"username", username},
-                {"dob", dob},
-                {"subscription", subscription},
-                {"isActive", isActive}
-        };
-        if (!workouts.empty()) {
+            {"id", id},
+            {"firstName", firstName},
+            {"lastName", lastName},
+            {"email", email},
+            {"phoneNumber", phoneNumber},
+            {"username", username},
+            {"dob", dob},
+            {"subscription", subscription},
+            {"isActive", isActive}};
+
+        if (!workouts.empty())
+        {
             json workoutsJson = json::array();
-            for (const auto& workout : workouts) {
+            for (const auto &workout : workouts)
+            {
                 workoutsJson.push_back(workout.toJson());
             }
             j["workouts"] = workoutsJson;
@@ -73,7 +109,8 @@ public:
         return j;
     }
 
-    static Member fromJson(const json& j) {
+    static Member fromJson(const json &j)
+    {
         Member m;
         m.id = j.at("id").get<std::string>();
         m.firstName = j.at("firstName").get<std::string>();
@@ -84,8 +121,11 @@ public:
         m.dob = j.value("dob", "");
         m.subscription = j.at("subscription");
         m.isActive = j.value("isActive", true);
-        if (j.contains("workouts") && j["workouts"].is_array()) {
-            for (const auto& workoutJson : j["workouts"]) {
+
+        if (j.contains("workouts") && j["workouts"].is_array())
+        {
+            for (const auto &workoutJson : j["workouts"])
+            {
                 m.workouts.push_back(Workout::fromJson(workoutJson));
             }
         }
