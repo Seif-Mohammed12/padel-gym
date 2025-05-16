@@ -5,7 +5,7 @@
             "12:00 PM",
             "02:00 PM"
         ],
-        "image": "file:images/padelace.jpg",
+        "image": "/images/padelace.jpg",
         "location": "Zamalek, Cairo",
         "name": "Padel Ace"
     },
@@ -15,7 +15,7 @@
             "01:00 PM",
             "03:00 PM"
         ],
-        "image": "file:images/padelhood.png",
+        "image": "/images/padelhood.png",
         "location": "Sheikh Zayed, Giza",
         "name": "Padel Hood"
     },
@@ -31,7 +31,7 @@
             "06:30 PM",
             "08:00 PM"
         ],
-        "image": "file:images/gopadel.png",
+        "image": "/images/gopadel.png",
         "location": "Downtown Cairo",
         "name": "Go! Padel"
     },
@@ -46,7 +46,7 @@
             "07:00 PM",
             "08:30 PM"
         ],
-        "image": "file:images/padelhouse.png",
+        "image": "/images/padelhouse.png",
         "location": "New Cairo",
         "name": "Padel House"
     },
@@ -62,7 +62,7 @@
             "04:00 PM",
             "05:00 PM"
         ],
-        "image": "file:images/padeldose.png",
+        "image": "/images/padeldose.png",
         "location": "Fifth Settlement, New Cairo",
         "name": "Padel Dose"
     },
@@ -79,7 +79,7 @@
             "04:00 PM",
             "05:00 PM"
         ],
-        "image": "file:images/sdpadel.png",
+        "image": "/images/sdpadel.png",
         "location": "Nasr City, Cairo",
         "name": "SD Padel"
     },
@@ -95,7 +95,7 @@
             "07:30 PM",
             "09:00 PM"
         ],
-        "image": "file:images/vertexpadel.png",
+        "image": "/images/vertexpadel.png",
         "location": "Heliopolis, Cairo",
         "name": "Vertex Padel"
     },
@@ -111,7 +111,7 @@
             "08:30 PM",
             "10:00 PM"
         ],
-        "image": "file:images/padelpoint.png",
+        "image": "/images/padelpoint.png",
         "location": "6th of October, Giza",
         "name": "Padel Point"
     },
@@ -128,7 +128,7 @@
             "06:00 PM",
             "07:00 PM"
         ],
-        "image": "file:images/xpadel.jpg",
+        "image": "/images/xpadel.jpg",
         "location": "Nasr City, Cairo",
         "name": "XPadel"
     },
@@ -142,7 +142,7 @@
             "04:30 PM",
             "06:00 PM"
         ],
-        "image": "file:C:\\Users\\seife\\padel-gym\\images\\srpadel.jpg",
+        "image": "/images/srpadel.jpg",
         "location": "Maadi, Cairo",
         "name": "SR Padel"
     }

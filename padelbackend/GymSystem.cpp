@@ -34,6 +34,7 @@ json GymSystem::getStaff() const {
 }
 
 void GymSystem::renewSubscription(string id, const json& newSub) {
+    loadMembers();
     for (auto& m : members) {
         if (m.id == id) {
             m.subscription = newSub;

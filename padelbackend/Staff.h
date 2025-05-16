@@ -1,4 +1,3 @@
-// Staff.h
 #ifndef STAFF_H
 #define STAFF_H
 
@@ -10,79 +9,56 @@ using json = nlohmann::json;
 
 class Staff {
 public:
-    // Define roles as an enum for type safety
     enum class Role {
-        Manager,
-        Trainer,
-        Receptionist,
-        Unknown // For invalid roles
+        Manager
     };
 
-    std::string name;
+    std::string username;
+    std::string password;
     Role role;
 
-    Staff() : name(""), role(Role::Unknown) {}
+    Staff() : username(""), password(""), role(Role::Manager) {}
 
-    // Add a staff member with role validation
-    void addStaff(const std::string& n, const std::string& r) {
-        name = n;
-        role = stringToRole(r);
-        if (role == Role::Unknown) {
-            throw std::invalid_argument("Invalid role: " + r);
+    void addStaff(const std::string& uname, const std::string& pwd, const std::string& r) {
+        username = uname;
+        password = pwd;
+        if (r != "manager") {
+            throw std::invalid_argument("Invalid role: " + r + ". Only 'manager' is allowed.");
         }
+        role = Role::Manager;
     }
 
-    // Display staff information
     void showStaff() const {
-        std::cout << "Name: " << name << ", Role: " << roleToString(role) << std::endl;
+        std::cout << "Username: " << username << ", Role: manager" << std::endl;
     }
 
-    // Role-specific methods to demonstrate logic
     bool canManageStaff() const {
-        return role == Role::Manager;
+        return true;
     }
 
-    bool canTrainMembers() const {
-        return role == Role::Trainer;
-    }
-
-    bool canHandleBookings() const {
-        return role == Role::Receptionist || role == Role::Manager;
-    }
-
-    // Serialization to JSON
     json toJson() const {
         return {
-                {"name", name},
-                {"role", roleToString(role)}
+                {"username", username},
+                {"password", password},
+                {"role", "manager"}
         };
     }
 
-    // Deserialization from JSON
     static Staff fromJson(const json& j) {
         Staff s;
-        s.name = j.at("name").get<std::string>();
-        s.role = stringToRole(j.at("role").get<std::string>());
+        s.username = j.at("username").get<std::string>();
+        s.password = j.at("password").get<std::string>();
+        std::string roleStr = j.at("role").get<std::string>();
+        if (roleStr != "manager") {
+            throw std::invalid_argument("Invalid role in JSON: " + roleStr + ". Only 'manager' is allowed.");
+        }
+        s.role = Role::Manager;
         return s;
     }
 
 private:
-    // Convert string to Role enum
-    static Role stringToRole(const std::string& roleStr) {
-        if (roleStr == "manager") return Role::Manager;
-        if (roleStr == "trainer") return Role::Trainer;
-        if (roleStr == "receptionist") return Role::Receptionist;
-        return Role::Unknown;
-    }
-
-    // Convert Role enum to string for display or serialization
     static std::string roleToString(Role r) {
-        switch (r) {
-            case Role::Manager: return "manager";
-            case Role::Trainer: return "trainer";
-            case Role::Receptionist: return "receptionist";
-            default: return "unknown";
-        }
+        return "manager";
     }
 };
 

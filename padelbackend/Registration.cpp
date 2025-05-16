@@ -4,6 +4,7 @@
 #include <regex>
 #include <random>
 #include <chrono>
+#include <set>
 
 // Default constructor for User
 Registration::User::User()
@@ -112,12 +113,38 @@ bool Registration::isUsernameTaken(const string& un) const {
 }
 
 // Save users to JSON file using FileManager
+// Save users to JSON file using FileManager (append instead of overwrite)
 void Registration::saveToJsonFile() const {
     std::lock_guard<std::mutex> lock(usersMutex);
-    json j = json::array();
-    for (const auto& [un, user] : users) {
-        j.push_back(user.toJson());
+
+    json j = FileManager::load("data.json");
+
+    if (!j.is_array()) {
+        j = json::array();
     }
+    // Create a set of existing usernames in the JSON to avoid duplicates
+    std::set<std::string> existingUsernames;
+    for (const auto& userJson : j) {
+        if (userJson.contains("username")) {
+            existingUsernames.insert(userJson["username"].get<std::string>());
+        }
+    }
+    // Add or update users from the in-memory users map
+    for (const auto& [username, user] : users) {
+        if (existingUsernames.find(username) == existingUsernames.end()) {
+            j.push_back(user.toJson());
+        } else {
+            // Optionally update existing user data (if you want to allow updates)
+            for (auto& userJson : j) {
+                if (userJson["username"] == username) {
+                    userJson = user.toJson(); // Update existing user
+                    break;
+                }
+            }
+        }
+    }
+
+    // Save the updated JSON back to the file
     FileManager::save(j, "data.json");
 }
 

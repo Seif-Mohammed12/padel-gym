@@ -1,34 +1,77 @@
 #include "GymClass.h"
 #include <algorithm>
+#include <iostream>
 
 GymClass::GymClass(const std::string& name, const std::string& instructor, const std::string& time, int capacity, const std::string& imagePath)
         : name(name), instructor(instructor), time(time), capacity(capacity), imagePath(imagePath) {}
 
 GymClass::GymClass() : capacity(0) {}
 
-bool GymClass::bookClass(const std::string& memberId) {
-    if (participants.size() < static_cast<size_t>(capacity)) {
-        participants.push_back(memberId);
+bool GymClass::bookClass(const std::string& memberId, bool* movedFromWaitlist) {
+    if (movedFromWaitlist) *movedFromWaitlist = false;
+
+    // Log initial state
+    std::cout << "Attempting to book class: " << name
+              << ", Member: " << memberId
+              << ", Current Participants: " << participants.size()
+              << ", Capacity: " << capacity
+              << ", Waitlist Size: " << waitlist.size() << std::endl;
+
+    if (std::find(participants.begin(), participants.end(), memberId) != participants.end()) {
         return true;
-    } else {
-        waitlist.push(memberId);
-        return false;
     }
+
+    // Check if member is on waitlist
+    auto waitlistVec = queueToVector(waitlist);
+    auto waitlistIt = std::find(waitlistVec.begin(), waitlistVec.end(), memberId);
+    if (waitlistIt != waitlistVec.end()) {
+        // Move to participants if capacity allows
+        if (participants.size() < static_cast<size_t>(capacity)) {
+            // Remove from waitlist
+            std::queue<std::string> temp;
+            while (!waitlist.empty()) {
+                std::string id = waitlist.front();
+                waitlist.pop();
+                if (id != memberId) {
+                    temp.push(id);
+                }
+            }
+            waitlist = temp;
+            participants.push_back(memberId);
+            if (movedFromWaitlist) *movedFromWaitlist = true;
+            return true;
+        }
+        return false; // Still waitlisted
+    }
+
+    if (capacity <= 0) {
+        waitlist.push(memberId);
+        return false; // Invalid capacity
+    }
+    if (participants.size() >= static_cast<size_t>(capacity)) {
+        waitlist.push(memberId);
+        return false; // Class full
+    }
+    participants.push_back(memberId);
+    return true;
 }
 
-bool GymClass::removeMember(const std::string& memberId) {
+std::string GymClass::removeMember(const std::string& memberId) {
+    std::string movedMemberId;
     // Check if member is in participants
     auto it = std::find(participants.begin(), participants.end(), memberId);
     if (it != participants.end()) {
         participants.erase(it);
         if (!waitlist.empty()) {
-            std::string nextMember = waitlist.front();
+            movedMemberId = waitlist.front();
             waitlist.pop();
-            participants.push_back(nextMember);
+            participants.push_back(movedMemberId);
+            std::cout << "Moved member " << movedMemberId << " from waitlist to participants for class " << name << std::endl;
         }
-        return true;
+        return movedMemberId;
     }
 
+    // Check if member is in waitlist
     std::queue<std::string> temp;
     bool found = false;
     while (!waitlist.empty()) {
@@ -41,7 +84,7 @@ bool GymClass::removeMember(const std::string& memberId) {
         }
     }
     waitlist = temp;
-    return found;
+    return found ? "" : movedMemberId;
 }
 
 std::vector<std::string> GymClass::queueToVector(const std::queue<std::string>& q) const {

@@ -19,11 +19,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 /**
  * Controller for the Manager Page, handling management of Padel Centers and Gym Classes.
@@ -66,8 +65,9 @@ public class ManagerPageController {
     // State variables
     private File selectedImageFile;
     private boolean isPadelMode = true; // Default to Padel Centers mode
-    private final int loggedInMemberId = 1; // Simulated member ID for testing
-    private JSONObject editingItem = null; // Tracks the item being edited
+
+    private JSONObject editingItem = null;
+    private static final String PLACEHOLDER_IMAGE_PATH = "/images/yoga.jpg";
 
     /**
      * Initializes the Manager Page UI, setting the default mode to Padel Centers
@@ -178,10 +178,37 @@ public class ManagerPageController {
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
         );
+
+        // Set initial directory to project's resources/images folder
+        String resourcePath = "padelfrontend/src/main/resources/images";
+        File initialDirectory = new File(resourcePath);
+        if (!initialDirectory.exists()) {
+            initialDirectory.mkdirs();
+        }
+        fileChooser.setInitialDirectory(initialDirectory);
+
         File file = fileChooser.showOpenDialog(saveButton.getScene().getWindow());
         if (file != null) {
-            selectedImageFile = file;
-            imageField.setText(file.getAbsolutePath());
+            try {
+                // Convert to relative path
+                String projectDir = System.getProperty("user.dir");
+                String relativePath = file.getPath().replace(projectDir + File.separator, "");
+
+                // Store the relative path
+                selectedImageFile = file;
+                imageField.setText(relativePath);
+
+                // Copy file to resources if it's not already there
+                if (!file.getPath().startsWith(projectDir + File.separator + resourcePath)) {
+                    File destFile = new File(resourcePath + File.separator + file.getName());
+                    Files.copy(file.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    selectedImageFile = destFile;
+                    imageField.setText("images/" + destFile.getName());
+                }
+            } catch (IOException e) {
+                System.err.println("Error copying image file: " + e.getMessage());
+                showMessage("Failed to process image file", false);
+            }
         }
     }
 
@@ -222,10 +249,14 @@ public class ManagerPageController {
             // Convert availableTimes array to comma-separated string
             String times = "";
             if (itemData.has("availableTimes")) {
-                JSONArray timesArray = itemData.getJSONArray("availableTimes");
-                times = String.join(", ", timesArray.toList().stream().map(Object::toString).toList());
+                try {
+                    JSONArray timesArray = itemData.getJSONArray("availableTimes");
+                    times = String.join(", ", timesArray.toList().stream().map(Object::toString).toList());
+                } catch (JSONException e) {
+                    System.err.println("Failed to parse availableTimes for item: " + itemData.optString("name", "Unknown") + ", error: " + e.getMessage());
+                }
             } else {
-                // Fallback to times field if availableTimes isn't present (for older data)
+                // Fallback to times field for older data
                 times = itemData.optString("times", "");
             }
             timesField.setText(times);
@@ -234,16 +265,26 @@ public class ManagerPageController {
             formTitle.setText("Edit Gym Class");
             saveButton.setText("Update Class");
             instructorField.setText(itemData.optString("instructor", ""));
-            timeField.setText(itemData.optString("time", "")); // Ensure time is populated
+            timeField.setText(itemData.optString("time", ""));
             capacityField.setText(String.valueOf(itemData.optInt("capacity", 0)));
         }
         String imagePath = itemData.optString("image", "");
         if (!imagePath.isEmpty()) {
-            imageField.setText(imagePath.replace("file:", ""));
-            selectedImageFile = new File(imagePath.replace("file:", ""));
+            if (imagePath.startsWith("file:")) {
+                // Handle legacy file-based image paths
+                String filePath = imagePath.replace("file:", "");
+                imageField.setText(filePath);
+                selectedImageFile = new File(filePath);
+            } else {
+                // Handle classpath resource paths
+                imageField.setText(imagePath);
+                selectedImageFile = null; // No file selected for resource paths
+            }
+        } else {
+            imageField.setText("");
+            selectedImageFile = null;
         }
     }
-
     // --- Message Display ---
 
     /**
@@ -289,17 +330,51 @@ public class ManagerPageController {
     private void saveItem() {
         JSONObject itemData = new JSONObject();
         itemData.put("name", nameField.getText());
-        String imagePath = selectedImageFile != null ? "file:" + selectedImageFile.getAbsolutePath() : "";
+
+        // Handle image path
+        String imagePath;
+        if (selectedImageFile != null) {
+            // Convert to relative path format
+            String fileName = selectedImageFile.getName();
+            imagePath = "images/" + fileName;
+
+            // Ensure image is in resources directory
+            try {
+                File resourceDir = new File("padelfrontend/src/main/resources/images");
+                if (!resourceDir.exists()) {
+                    resourceDir.mkdirs();
+                }
+
+                File destFile = new File(resourceDir, fileName);
+                if (!selectedImageFile.equals(destFile)) {
+                    Files.copy(selectedImageFile.toPath(), destFile.toPath(),
+                            StandardCopyOption.REPLACE_EXISTING);
+                }
+            } catch (IOException e) {
+                System.err.println("Failed to copy image to resources: " + e.getMessage());
+                showMessage("Failed to process image file", false);
+                return;
+            }
+        } else if (editingItem != null) {
+            imagePath = editingItem.optString("image", "");
+        } else {
+            imagePath = "";
+        }
         itemData.put("image", imagePath);
 
+        // Rest of the method remains the same
         if (isPadelMode) {
             itemData.put("times", timesField.getText());
             itemData.put("location", locationField.getText());
         } else {
             itemData.put("instructor", instructorField.getText());
             itemData.put("time", timeField.getText());
-            itemData.put("capacity", Integer.parseInt(capacityField.getText().trim()));
-            // Include existing participants and waitlist data if editing
+            try {
+                itemData.put("capacity", Integer.parseInt(capacityField.getText().trim()));
+            } catch (NumberFormatException e) {
+                showMessage("Invalid capacity: Please enter a number.", false);
+                return;
+            }
             if (editingItem != null) {
                 itemData.put("participants", editingItem.optJSONArray("participants"));
                 itemData.put("waitlist", editingItem.optJSONArray("waitlist"));
@@ -308,23 +383,19 @@ public class ManagerPageController {
             }
         }
 
-
         JSONObject request = new JSONObject();
         if (editingItem != null) {
-            // Update request
             request.put("action", isPadelMode ? "update_padel_center" : "update_gym_class");
             request.put("oldData", editingItem);
             request.put("newData", itemData);
         } else {
-            // Save new request
             request.put("action", isPadelMode ? "save_padel_center" : "save_gym_class");
             request.put("data", itemData);
         }
 
-        try {
-            Socket socket = new Socket("localhost", 8080);
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        try (Socket socket = new Socket("localhost", 8080);
+             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
             out.println(request.toString());
             String response = in.readLine();
@@ -343,8 +414,6 @@ public class ManagerPageController {
             } else {
                 showMessage(message, false);
             }
-
-            socket.close();
         } catch (Exception e) {
             e.printStackTrace();
             showMessage("Failed to " + (editingItem != null ? "update" : "save") + " " +
@@ -371,31 +440,44 @@ public class ManagerPageController {
             System.out.println("Raw server response: " + response);
 
             if (response == null || response.trim().isEmpty()) {
-                System.out.println("No items available.");
+                showMessage("No " + (isPadelMode ? "padel centers" : "gym classes") + " available.", false);
                 socket.close();
                 return;
             }
 
-            JSONArray items;
+            JSONObject responseJson;
             try {
-                if (response.trim().startsWith("[")) {
-                    items = new JSONArray(response);
-                } else {
-                    JSONObject singleObject = new JSONObject(response);
-                    items = new JSONArray();
-                    items.put(singleObject);
-                }
+                responseJson = new JSONObject(response);
             } catch (JSONException e) {
-                System.out.println("Failed to parse server response: " + e.getMessage());
+                System.err.println("Failed to parse server response: " + e.getMessage());
                 showMessage("Failed to load items: Invalid server response.", false);
                 socket.close();
                 return;
             }
 
+            String status = responseJson.optString("status", "error");
+            if (!status.equals("success")) {
+                String message = responseJson.optString("message", "Unknown error");
+                showMessage("Failed to load items: " + message, false);
+                socket.close();
+                return;
+            }
+
+            JSONArray items = responseJson.optJSONArray("data");
+            if (items == null || items.length() == 0) {
+                showMessage("No " + (isPadelMode ? "padel centers" : "gym classes") + " found.", false);
+                socket.close();
+                return;
+            }
+
             for (int i = 0; i < items.length(); i++) {
-                JSONObject item = items.getJSONObject(i);
-                VBox itemCard = createItemCard(item);
-                itemsContainer.getChildren().add(itemCard);
+                try {
+                    JSONObject item = items.getJSONObject(i);
+                    VBox itemCard = createItemCard(item);
+                    itemsContainer.getChildren().add(itemCard);
+                } catch (JSONException e) {
+                    System.err.println("Failed to process item at index " + i + ": " + e.getMessage());
+                }
             }
 
             socket.close();
@@ -457,11 +539,24 @@ public class ManagerPageController {
 
         ImageView imageView = new ImageView();
         try {
-            String imageUrl = itemData.optString("image", itemData.optString("imagePath" , ""));
-            Image image = new Image(imageUrl);
+            String imagePath = itemData.optString("image", itemData.optString("imagePath", ""));
+            // Remove any file: prefix and normalize path
+            imagePath = imagePath.replace("file:", "").replace("\\", "/");
+
+            Image image;
+            if (imagePath.isEmpty()) {
+                System.out.println("No image path provided for item: " + itemData.optString("name", "Unknown"));
+                image = loadResourceImage(PLACEHOLDER_IMAGE_PATH);
+            } else {
+                image = loadResourceImage(imagePath);
+            }
             imageView.setImage(image);
+            imageView.setFitWidth(150);
+            imageView.setFitHeight(100);
+            imageView.setPreserveRatio(true);
         } catch (Exception e) {
-            System.out.println("Failed to load image: " + itemData.optString("image", "N/A"));
+            System.out.println("Failed to load image for item: " + itemData.optString("name", "Unknown") + ", error: " + e.getMessage());
+            imageView.setImage(loadResourceImage(PLACEHOLDER_IMAGE_PATH));
         }
         imageView.getStyleClass().add("center-image");
 
@@ -507,7 +602,6 @@ public class ManagerPageController {
             itemCard.getChildren().addAll(imageView, nameLabel, instructorLabel, timeLabel, capacityLabel, participantsLabel, waitlistLabel);
         }
 
-        // Edit and Delete buttons
         Button editButton = new Button("Edit");
         editButton.getStyleClass().add("edit-button");
         editButton.setOnAction(event -> editItem(itemData));
@@ -523,6 +617,47 @@ public class ManagerPageController {
         return itemCard;
     }
 
+    private Image loadResourceImage(String resourcePath) {
+        try {
+            // Remove any 'file:' prefix if present
+            resourcePath = resourcePath.replace("file:", "");
+
+            // If the path starts with a slash, remove it
+            if (resourcePath.startsWith("/")) {
+                resourcePath = resourcePath.substring(1);
+            }
+
+            // First try loading as a classpath resource
+            InputStream stream = getClass().getResourceAsStream("/" + resourcePath);
+
+            // If not found in classpath, try loading from resources directory
+            if (stream == null) {
+                File resourceFile = new File("padelfrontend/src/main/resources/" + resourcePath);
+                if (resourceFile.exists()) {
+                    stream = new FileInputStream(resourceFile);
+                } else {
+                    // If still not found, try loading the placeholder
+                    stream = getClass().getResourceAsStream(PLACEHOLDER_IMAGE_PATH);
+                    if (stream == null) {
+                        throw new IOException("Neither image nor placeholder could be found");
+                    }
+                }
+            }
+
+            Image image = new Image(stream);
+            stream.close();
+
+            if (image.isError()) {
+                throw new IOException("Failed to load image");
+            }
+            return image;
+        } catch (Exception e) {
+            System.err.println("Failed to load image: " + resourcePath + ", error: " + e.getMessage());
+            // Return a transparent 1x1 image as fallback
+            return new Image("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=");
+        }
+    }
+
     // --- Navigation ---
 
     /**
@@ -531,7 +666,17 @@ public class ManagerPageController {
     @FXML
     private void goToHome() {
         try {
-            Parent homePage = FXMLLoader.load(getClass().getResource("home.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("home.fxml"));
+            Parent homePage = loader.load();
+            AppContext context = AppContext.getInstance();
+            context.clear();
+
+            // Get HomeController to force update login button
+            HomeController homeController = loader.getController();
+            if (homeController != null) {
+                homeController.updateLoginButton();
+                homeController.updateJoinButton();
+            }
             Stage stage = (Stage) saveButton.getScene().getWindow();
             Scene currentScene = stage.getScene();
 
@@ -545,6 +690,13 @@ public class ManagerPageController {
                 fadeIn.setFromValue(0.0);
                 fadeIn.setToValue(1.0);
                 fadeIn.play();
+                javafx.application.Platform.runLater(() -> {
+                    homePage.requestLayout();
+                    if (homeController != null) {
+                        homeController.updateLoginButton();
+
+                    }
+                });
             });
 
             fadeOut.play();

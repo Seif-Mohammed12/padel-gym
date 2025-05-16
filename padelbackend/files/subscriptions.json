@@ -5,15 +5,18 @@
             "1 group class per week",
             "Basic support"
         ],
-        "imagePath": "file:images/yoga.jpg",
-        "name": "Basic Plan",
+        "imagePath": "/images/yoga.jpg",
+        "name": "Basic",
         "pricing": {
             "1_month": 29.99,
             "1_year": 299.99,
             "3_months": 84.99,
             "6_months": 149.99
         },
-        "subscribers": []
+        "subscribers": [
+            "MEM352613",
+            "MEM595488"
+        ]
     },
     {
         "features": [
@@ -21,8 +24,8 @@
             "3 group classes per week",
             "Priority support"
         ],
-        "imagePath": "file:images/yoga.jpg",
-        "name": "Pro Plan",
+        "imagePath": "/images/yoga.jpg",
+        "name": "Pro",
         "pricing": {
             "1_month": 49.99,
             "1_year": 499.99,
@@ -38,8 +41,8 @@
             "Premium support",
             "Personal trainer session"
         ],
-        "imagePath": "file:images/yoga.jpg",
-        "name": "Elite Plan",
+        "imagePath": "/images/yoga.jpg",
+        "name": "Elite",
         "pricing": {
             "1_month": 79.99,
             "1_year": 749.99,

@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.Pane?>
 
-<AnchorPane stylesheets="@gym.css" styleClass="root" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.padelfrontend.GymController">
+<AnchorPane stylesheets="@gym.css" styleClass="root" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.padelfrontend.GymController">
     <!-- Navigation Bar -->
     <HBox fx:id="navbar" alignment="CENTER_LEFT" spacing="30" styleClass="navbar" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
         <Label styleClass="logo" text="Padel Gym" />
@@ -41,18 +41,14 @@
                 </ScrollPane>
             </Tab>
 
-            <!-- Workout History Tab -->
+            <!-- Replace the Workout History Tab content with this: -->
             <Tab text="Workout History" closable="false">
                 <ScrollPane style="-fx-background-color: transparent; -fx-background: transparent;" fitToWidth="true">
-                    <VBox spacing="10" alignment="TOP_CENTER">
-                        <TableView fx:id="workoutHistoryTable" prefHeight="200" prefWidth="600">
-                            <columns>
-                                <TableColumn text="Class Name" prefWidth="200" />
-                                <TableColumn text="Date" prefWidth="200" />
-                                <TableColumn text="Instructor" prefWidth="200" />
-                            </columns>
-                        </TableView>
-                        <Button fx:id="clearHistoryButton" text="Clear Workout History" styleClass="gym-action-button" />
+                    <VBox spacing="20" alignment="TOP_CENTER" style="-fx-padding: 20;">
+                        <Button fx:id="clearHistoryButton" text="Clear Workout History"
+                                styleClass="gym-action-button" />
+                        <FlowPane fx:id="workoutHistoryContainer" hgap="20" vgap="20"
+                                  alignment="CENTER"/>
                     </VBox>
                 </ScrollPane>
             </Tab>

@@ -57,7 +57,7 @@ void WorkoutHistory::addWorkout(const std::string& memberId, const std::string& 
     // Generate a unique ID using timestamp
     auto now = std::chrono::system_clock::now();
     auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
-    workout.id = std::to_string(timestamp); // Better than rand(), but consider UUID for production
+    workout.id = std::to_string(timestamp);
     workout.className = className;
     workout.date = date;
     workout.instructor = instructor;

@@ -14,19 +14,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 
 /**
@@ -48,6 +42,8 @@ public class HomeController {
 
     private static final Duration TRANSITION_DURATION = Duration.millis(400);
     private static final String PLACEHOLDER_IMAGE_PATH = "/images/placeholder.png";
+    private static final int SERVER_PORT = 8080;
+    private static final String SERVER_HOST = "localhost";
 
     @FXML
     public void initialize() {
@@ -57,12 +53,17 @@ public class HomeController {
         updateJoinButton();
         fetchPadelCenters();
         fetchGymClasses();
+        loadActiveSubscriptions();
+        Platform.runLater(() -> {
+            loginButton.requestLayout();
+            navbar.requestLayout();
+        });
     }
 
     /**
      * Updates the login button text based on the user's login state.
      */
-    private void updateLoginButton() {
+    void updateLoginButton() {
         AppContext context = AppContext.getInstance();
         String originalText;
         if (context.isLoggedIn()) {
@@ -92,7 +93,7 @@ public class HomeController {
      * Updates the join button based on the user's login state.
      * If signed in, replaces "Join Now" with "My Account".
      */
-    private void updateJoinButton() {
+    void updateJoinButton() {
         AppContext context = AppContext.getInstance();
         if (context.isLoggedIn()) {
             joinButton.setText("My Account");
@@ -166,7 +167,7 @@ public class HomeController {
             card.setAlignment(javafx.geometry.Pos.CENTER);
 
             ImageView imageView = new ImageView();
-            Image image = loadImage(imageUrl);
+            Image image = loadImage(imageUrl).getImage();
             if (image != null) {
                 imageView.setImage(image);
             } else {
@@ -229,6 +230,71 @@ public class HomeController {
     }
 
     /**
+     * Loads active subscriptions for the current user from the server and updates AppContext.
+     * @return JSONArray of active subscriptions, or null if none exist or an error occurs.
+     */
+    /**
+     * Loads active subscriptions for the current user from the server and updates AppContext.
+     * @return JSONArray of active subscriptions, or null if none exist or an error occurs.
+     */
+    private JSONArray loadActiveSubscriptions() {
+        AppContext context = AppContext.getInstance();
+        try {
+            String memberId = context.getMemberId();
+            if (memberId == null) {
+                //showAlert("Error", "Member ID is missing. Please update your profile.");
+                return null;
+            }
+
+            JSONObject request = new JSONObject();
+            request.put("action", "get_active_subscriptions");
+            request.put("memberId", memberId);
+
+            String response = sendRequestToServer(request.toString());
+            JSONObject responseJson = new JSONObject(response);
+            System.out.println("Server response: " + response);
+
+            if (!responseJson.getString("status").equals("success")) {
+                //showAlert("Error", responseJson.getString("message"));
+                return null;
+            }
+
+            JSONArray activeSubs = responseJson.getJSONArray("data");
+            // Update AppContext with subscription details
+            if (activeSubs.length() > 0) {
+                JSONObject sub = activeSubs.getJSONObject(0);
+                context.setSubscribedPlanName(sub.optString("planName", "Unknown Plan"));
+                context.setSubscribedDuration(sub.optString("duration", "Unknown Duration"));
+                context.setDob(sub.optString("dob", null)); // Set dob from server response
+                System.out.println(context.getDob());
+            } else {
+                context.setSubscribedPlanName(null);
+                context.setSubscribedDuration(null);
+                context.setDob(null); // Clear dob if no active subscriptions
+            }
+
+            return activeSubs;
+        } catch (Exception e) {
+            //showAlert("Error", "Failed to load active subscriptions: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private String sendRequestToServer(String request) throws IOException {
+        try (Socket socket = new Socket(SERVER_HOST, SERVER_PORT);
+             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+
+            System.out.println("Sending request: " + request);
+            out.println(request);
+            String response = in.readLine();
+            System.out.println("Server response: " + response);
+            return response != null ? response : "{}";
+        }
+    }
+
+    /**
      * Populates the classesContainer with gym class cards.
      */
     private void populateGymClasses(JSONArray classes) {
@@ -245,7 +311,7 @@ public class HomeController {
             card.setAlignment(javafx.geometry.Pos.CENTER);
 
             ImageView imageView = new ImageView();
-            Image image = loadImage(imageUrl);
+            Image image = loadImage(imageUrl).getImage();
             if (image != null) {
                 imageView.setImage(image);
             } else {
@@ -265,22 +331,54 @@ public class HomeController {
     }
 
     /**
-     * Loads an image from the given URL or falls back to a placeholder.
+     * Creates an image view for a class card using a classpath resource.
+     *
+     * @param imagePath The path to the image resource (e.g., /images/yoga.jpg).
+     * @return An ImageView with the loaded image or a fallback.
      */
-    private Image loadImage(String imageUrl) {
+    private ImageView loadImage(String imagePath) {
+        Image image;
         try {
-            if (imageUrl != null && !imageUrl.isEmpty()) {
-                // Try loading from URL or file
-                return new Image(imageUrl, true); // true for background loading
+            if (imagePath == null || imagePath.trim().isEmpty() || !imagePath.startsWith("/images/")) {
+                System.err.println("Invalid image path: '" + imagePath + "', using placeholder.");
+                image = loadResourceImage(PLACEHOLDER_IMAGE_PATH);
+            } else {
+                System.out.println("Loading image: " + imagePath);
+                image = loadResourceImage(imagePath);
             }
-            // Fallback to placeholder
-            return new Image(getClass().getResourceAsStream(PLACEHOLDER_IMAGE_PATH));
         } catch (Exception e) {
-            System.err.println("Error loading image: " + e.getMessage());
-            // Return null or try placeholder again if the stream fails
-            return getClass().getResourceAsStream(PLACEHOLDER_IMAGE_PATH) != null
-                    ? new Image(getClass().getResourceAsStream(PLACEHOLDER_IMAGE_PATH))
-                    : null;
+            System.err.println("Failed to load image: '" + imagePath + "', using placeholder. Error: " + e.getMessage());
+            image = loadResourceImage(PLACEHOLDER_IMAGE_PATH);
+        }
+
+        ImageView imageView = new ImageView(image);
+        imageView.setFitWidth(150);
+        imageView.setFitHeight(100);
+        imageView.setPreserveRatio(true);
+        return imageView;
+    }
+
+    /**
+     * Loads an image from a classpath resource, falling back to a transparent image if loading fails.
+     *
+     * @param resourcePath The classpath resource path (e.g., /images/yoga.jpg).
+     * @return The loaded Image or a transparent 1x1 image.
+     */
+    private Image loadResourceImage(String resourcePath) {
+        try {
+            InputStream stream = getClass().getResourceAsStream(resourcePath);
+            if (stream == null) {
+                throw new IOException("Resource not found: " + resourcePath);
+            }
+            Image image = new Image(stream);
+            if (image.isError()) {
+                throw new IOException("Image failed to load: " + resourcePath);
+            }
+            return image;
+        } catch (Exception e) {
+            System.err.println("Failed to load resource: '" + resourcePath + "'. Error: " + e.getMessage());
+            // Fallback to a transparent 1x1 image
+            return new Image("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=");
         }
     }
 
@@ -363,7 +461,18 @@ public class HomeController {
 
     @FXML
     private void goToLogin() {
-        fadeToPage("LoginPage.fxml");
+        AppContext context = AppContext.getInstance();
+        if (context.isLoggedIn()) {
+            context.clear();
+            loginButton.setText("Login");
+            loginButton.setOnMouseEntered(null);
+            loginButton.setOnMouseExited(null);
+            updateJoinButton();
+            homeButton.getStyleClass().add("active");
+            loginButton.setMinWidth(Region.USE_COMPUTED_SIZE);
+        } else {
+            fadeToPage("LoginPage.fxml");
+        }
     }
 
     @FXML

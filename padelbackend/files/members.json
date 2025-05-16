@@ -1,0 +1,34 @@
+[
+    {
+        "dob": "12-06-2005",
+        "email": "",
+        "firstName": "Seif",
+        "id": "MEM352613",
+        "isActive": true,
+        "lastName": "Mohammed",
+        "phoneNumber": "+201099228486",
+        "subscription": {
+            "duration": "1_month",
+            "planName": "Basic",
+            "price": 29.99
+        },
+        "username": "seif_12",
+        "workouts": []
+    },
+    {
+        "dob": "12-06-2005",
+        "email": "",
+        "firstName": "Mina",
+        "id": "MEM595488",
+        "isActive": true,
+        "lastName": "Gimmy",
+        "phoneNumber": "+201234567890",
+        "subscription": {
+            "duration": "1_month",
+            "planName": "Basic",
+            "price": 29.99
+        },
+        "username": "gimmy_11",
+        "workouts": []
+    }
+]

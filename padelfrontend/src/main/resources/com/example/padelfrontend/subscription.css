@@ -21,7 +21,7 @@ AnchorPane {
 .nav-button {
     -fx-background-color: transparent;
     -fx-text-fill: white;
-    -fx-font-size: 16px;
+    -fx-font-size: 20px;
     -fx-font-weight: bold;
     -fx-font-family: "Arial";
     -fx-cursor: hand;
@@ -31,14 +31,13 @@ AnchorPane {
     -fx-text-fill: #3a82f7;
 }
 
-.nav-button:pressed{
-    -fx-background-color: rgba(30, 30, 50, 1.0);
+.nav-button:pressed {
     -fx-scale-x: 1;
     -fx-scale-y: 1;
 }
 
 .nav-button.active {
-    -fx-text-fill: #4CAF50; /* White text color */
+    -fx-text-fill: #4CAF50;
 }
 
 .login-button {
@@ -54,7 +53,6 @@ AnchorPane {
 .login-button:hover {
     -fx-background-color: linear-gradient(to bottom, #2c6ae4, #174dc6);
 }
-
 
 /* Page Title Styling */
 .page-title {
@@ -79,7 +77,7 @@ AnchorPane {
     -fx-font-family: "Arial";
     -fx-background-radius: 20;
     -fx-border-radius: 20;
-    -fx-padding: 8 15 8 15;
+    -fx-padding: 8 15;
     -fx-cursor: hand;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 5, 0, 0, 1);
 }
@@ -112,52 +110,143 @@ AnchorPane {
 /* Subscription Plan Card Styling */
 .subscription-plan-card {
     -fx-background-color: #2E3538;
-    -fx-background-radius: 10;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 8, 0, 0, 2);
-    -fx-alignment: center;
-    -fx-padding: 15;
+    -fx-background-radius: 15;
+    -fx-border-radius: 15;
+    -fx-border-color: #4A5A5B;
+    -fx-border-width: 1;
+    -fx-padding: 0 0 20 0; /* Reduced bottom padding since we'll move some to content */
     -fx-cursor: hand;
+    -fx-alignment: top-center;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0, 0, 2);
 }
 
-.subscription-plan-card:hover {
-    -fx-background-color: #353C3F;
-    -fx-effect: dropshadow(gaussian, #FFCA28, 12, 0.2, 0, 0); /* Yellow glow on hover */
-    -fx-translate-y: -3; /* Slight lift effect */
+/* Plan-specific card gradients */
+.subscription-plan-card.plan-basic {
+    -fx-border-color: #1e40af;
+    -fx-background-color: linear-gradient(to bottom, #1e3a8a 0%, #2E3538 30%);
 }
 
-/* Plan Image Styling */
-.plan-image {
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 5, 0, 0, 1);
+.subscription-plan-card.plan-pro {
+    -fx-border-color: #15803d;
+    -fx-background-color: linear-gradient(to bottom, #166534 0%, #2E3538 30%);
+}
+
+.subscription-plan-card.plan-basic:hover {
+    -fx-border-color: #2563eb;
+    -fx-background-color: linear-gradient(to bottom, #2563eb 0%, #374151 30%);
+}
+
+.subscription-plan-card.plan-pro:hover {
+    -fx-border-color: #22c55e;
+    -fx-background-color: linear-gradient(to bottom, #16a34a 0%, #374151 30%);
+}
+
+.subscription-plan-card.plan-elite {
+    -fx-border-color: #a16207;
+    -fx-background-color:
+            linear-gradient(to bottom,
+            #854d0e 0%,
+            #2E3538 30%);
+}
+
+.subscription-plan-card.plan-elite:hover {
+    -fx-background-color:
+            linear-gradient(to bottom,
+            #a16207 0%,
+            #353C3F 30%);
+}
+
+
+/* Add to your plan-header styles */
+.plan-header {
+    -fx-padding: 15 10 0 10; /* Reduce bottom padding */
+    -fx-alignment: center;
+    -fx-background-color: transparent;
+    -fx-spacing: 10;
 }
 
 /* Plan Name Styling */
 .plan-name {
-    -fx-font-size: 20px;
+    -fx-font-size: 24px;
     -fx-font-weight: bold;
     -fx-text-fill: #FFFFFF;
-    -fx-padding: 5 0 5 0;
+    -fx-font-family: "Arial";
+}
+
+/* Card content container */
+.card-content {
+    -fx-padding: 20;
+    -fx-spacing: 15;
+}
+
+/* Button container to push button to bottom */
+.button-container {
+    -fx-padding: 20 0 0 0;
+    -fx-alignment: bottom-center;
+}
+
+
+/* Best Value Badge Styling */
+.plan-badge {
+    -fx-background-color: linear-gradient(to right, #FFD700, #FFA500);
+    -fx-text-fill: #12171A;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 12 4 12; /* More bottom padding for overlap */
+    -fx-background-radius: 8 8 8 8;
+    -fx-border-radius: 0 0 8 8;
+    -fx-font-family: "Arial";
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 1, 1);
+    -fx-translate-y: -25; /* Half outside */
+    -fx-transition: all 0.3s ease;
+}
+
+/* Make the badge match card gradient on hover */
+.subscription-plan-card.plan-elite:hover .plan-badge {
+    -fx-background-color: linear-gradient(to bottom, #FFEE58, #FFC107);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 7, 0, 2, 2);
+}
+
+/* Plan Price Styling */
+.plan-price {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-family: "Arial";
+}
+
+/* Plan Duration Styling */
+.plan-duration {
+    -fx-font-size: 16px;
+    -fx-text-fill: #B0BEC5;
+    -fx-font-family: "Arial";
+}
+
+/* Feature Checkmark Styling */
+.feature-checkmark {
+    -fx-font-size: 16px;
+    -fx-text-fill: #4CAF50;
     -fx-font-family: "Arial";
 }
 
 /* Plan Details Styling */
 .plan-detail {
     -fx-font-size: 16px;
-    -fx-text-fill: #B0BEC5;
-    -fx-padding: 2 0 2 0;
+    -fx-text-fill: #E0E0E0;
     -fx-font-family: "Arial";
 }
 
 /* Subscribe Button Styling */
 .subscribe-button {
-    -fx-background-color: #FFCA28; /* Yellow accent color */
-    -fx-background-radius: 20;
+    -fx-background-color: #FFCA28;
+    -fx-background-radius: 25;
     -fx-text-fill: #12171A;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
     -fx-font-family: "Arial";
-    -fx-padding: 8 20;
+    -fx-padding: 10 25;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0, 0, 1);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0, 0, 1);
 }
 
 .subscribe-button:hover {
@@ -177,13 +266,32 @@ AnchorPane {
     -fx-text-fill: #B0BEC5;
     -fx-opacity: 0.8;
 }
+
 .subscribed-button {
-    -fx-background-color: #28a745; /* Green for subscribed */
-    -fx-background-radius: 20;
-    -fx-text-fill: #12171A;
+    -fx-background-color: #cccccc;
+    -fx-text-fill: #222;
+    -fx-padding: 10 25;
+    -fx-background-radius: 25;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
     -fx-font-family: "Arial";
-    -fx-padding: 8 20;
-    -fx-opacity: 0.7; /* Slightly faded to indicate disabled */
+    -fx-opacity: 0.7;
+}
+
+.change-subscription-button {
+    -fx-background-color: #ff9800;
+    -fx-text-fill: white;
+    -fx-padding: 10 25;
+    -fx-background-radius: 25;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Arial";
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0, 0, 1);
+}
+
+.change-subscription-button:hover {
+    -fx-background-color: #f57c00;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
 }

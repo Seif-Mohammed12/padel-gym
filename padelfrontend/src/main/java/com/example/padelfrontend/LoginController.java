@@ -144,8 +144,9 @@ public class LoginController {
                             context.setEmail(email);
 
                             try {
-                                // Load home page
-                                Parent homePage = FXMLLoader.load(getClass().getResource("home.fxml"));
+                                // Determine FXML based on role
+                                String fxmlFile = role.equals("manager") ? "ManagerPage.fxml" : "home.fxml";
+                                Parent targetPage = FXMLLoader.load(getClass().getResource(fxmlFile));
                                 Scene currentScene = usernameField.getScene();
                                 Parent currentPage = currentScene.getRoot();
 
@@ -154,8 +155,8 @@ public class LoginController {
                                 fadeOut.setToValue(0.0);
 
                                 fadeOut.setOnFinished(e -> {
-                                    currentScene.setRoot(homePage);
-                                    FadeTransition fadeIn = new FadeTransition(Duration.millis(500), homePage);
+                                    currentScene.setRoot(targetPage);
+                                    FadeTransition fadeIn = new FadeTransition(Duration.millis(500), targetPage);
                                     fadeIn.setFromValue(0.0);
                                     fadeIn.setToValue(1.0);
                                     fadeIn.play();
@@ -163,7 +164,7 @@ public class LoginController {
 
                                 fadeOut.play();
                             } catch (Exception e) {
-                                responseLabel.setText("Error loading home page: " + e.getMessage());
+                                responseLabel.setText("Error loading page: " + e.getMessage());
                                 responseLabel.getStyleClass().remove("success");
                             }
                         } else {

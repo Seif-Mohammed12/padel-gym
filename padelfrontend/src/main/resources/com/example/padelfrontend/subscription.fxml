@@ -10,8 +10,6 @@
 <?import javafx.scene.text.Text?>
 
 <AnchorPane stylesheets="@subscription.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.padelfrontend.SubscriptionController">
-
-
     <!-- Navigation Bar -->
     <HBox fx:id="navbar" alignment="CENTER_LEFT" spacing="30" styleClass="navbar" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
         <Label styleClass="logo" text="Padel Gym" />
@@ -19,9 +17,8 @@
         <Button fx:id="bookingButton" onAction="#goToBooking" prefHeight="70.0" styleClass="nav-button" text="Booking" />
         <Button fx:id="subscriptionButton" prefHeight="70.0" styleClass="nav-button" text="Subscription" />
         <Button fx:id="gymButton" onAction="#goToGym" prefHeight="70.0" styleClass="nav-button" text="Gym" />
-
         <Pane HBox.hgrow="ALWAYS" />
-        <Button fx:id="loginButton" styleClass="login-button" text="Login" />
+        <Button fx:id="loginButton" styleClass="login-button" text="Login" onAction="#handleLoginButton" />
     </HBox>
 
     <!-- Main Content -->

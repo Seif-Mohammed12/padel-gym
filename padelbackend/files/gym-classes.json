@@ -1,8 +1,8 @@
 [
     {
         "capacity": 12,
-        "currentParticipants": 1,
-        "imagePath": "file:C:\\Users\\seife\\padel-gym\\images\\yoga.jpg",
+        "currentParticipants": 0,
+        "imagePath": "/images/yoga.jpg",
         "instructor": "Sara Ahmed",
         "name": "Yoga Flow",
         "participants": [],
@@ -13,7 +13,7 @@
     {
         "capacity": 1,
         "currentParticipants": 0,
-        "imagePath": "file:C:\\Users\\seife\\padel-gym\\images\\cardio.jpg",
+        "imagePath": "/images/cardio.jpg",
         "instructor": "Mohamed Ali",
         "name": "Cardio Blast",
         "participants": [],
@@ -23,8 +23,8 @@
     },
     {
         "capacity": 1,
-        "currentParticipants": 1,
-        "imagePath": "file:C:\\Users\\seife\\padel-gym\\images\\strength.jpg",
+        "currentParticipants": 0,
+        "imagePath": "/images/strength.jpg",
         "instructor": "Laila Hassan",
         "name": "Strength Training",
         "participants": [],
@@ -35,7 +35,7 @@
     {
         "capacity": 1,
         "currentParticipants": 0,
-        "imagePath": "file:C:\\Users\\seife\\padel-gym\\images\\zumba.jpg",
+        "imagePath": "/images/zumba.jpg",
         "instructor": "Karim Mostafa",
         "name": "Zumba Party",
         "participants": [],

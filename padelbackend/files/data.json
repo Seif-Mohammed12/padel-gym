@@ -1,12 +1,22 @@
 [
     {
-        "email": "seifeldin1206@gmail.com",
+        "email": "",
         "firstName": "Seif",
         "lastName": "Mohammed",
-        "memberId": "MEM589493",
+        "memberId": "MEM352613",
         "password": "Seso1206@",
         "phoneNumber": "+201099228486",
         "role": "user",
         "username": "seif_12"
+    },
+    {
+        "email": "",
+        "firstName": "Mina",
+        "lastName": "Gimmy",
+        "memberId": "MEM595488",
+        "password": "Seso1206@",
+        "phoneNumber": "+201234567890",
+        "role": "user",
+        "username": "gimmy_11"
     }
 ]

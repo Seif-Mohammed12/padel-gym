@@ -24,10 +24,7 @@ import javafx.util.StringConverter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -58,6 +55,7 @@ public class BookingController {
     private ObservableList<PadelCenter> allCenters;
     private long lastUpdateTime = 0;
     private static final long DEBOUNCE_DELAY = 100;
+    private static final String PLACEHOLDER_IMAGE_PATH = "/images/placeholder.png";
 
     /**
      * A simple class to represent a padel center.
@@ -88,7 +86,6 @@ public class BookingController {
         setupCenterSearchField();
         applyDropdownStyles();
         fetchPadelPlaces();
-        // Update login button based on AppContext (if applicable)
         updateLoginButton();
     }
 
@@ -112,7 +109,6 @@ public class BookingController {
         allCenters = FXCollections.observableArrayList();
         centerSearchField.setItems(allCenters);
 
-        // Set up the StringConverter to display only the center name
         centerSearchField.setConverter(new StringConverter<>() {
             @Override
             public String toString(PadelCenter center) {
@@ -129,7 +125,6 @@ public class BookingController {
             }
         });
 
-        // Add listener to filter items based on editor's text input with debouncing
         centerSearchField.getEditor().textProperty().addListener((obs, oldValue, newValue) -> {
             if (isUpdating) return;
             long currentTime = System.currentTimeMillis();
@@ -149,17 +144,14 @@ public class BookingController {
             }
         });
 
-        // Track dropdown state
         centerSearchField.showingProperty().addListener((obs, wasShowing, isShowing) -> {
             isComboBoxOpen = isShowing;
         });
 
-        // Track when an item is selected
         centerSearchField.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> {
             justSelected = newValue != null;
         });
 
-        // Add key event handler to handle typing after selection
         centerSearchField.getEditor().setOnKeyTyped(event -> {
             try {
                 TextField editor = centerSearchField.getEditor();
@@ -188,7 +180,6 @@ public class BookingController {
             }
         });
 
-        // Handle dropdown icon click to toggle the dropdown
         dropdownicon.setOnMouseClicked(event -> {
             if (centerSearchField.isShowing()) {
                 Platform.runLater(() -> {
@@ -212,7 +203,6 @@ public class BookingController {
             event.consume();
         });
 
-        // Prevent ComboBox from handling the click event on the icon
         centerSearchField.setOnMouseClicked(event -> {
             if (event.getTarget() == dropdownicon) {
                 event.consume();
@@ -253,19 +243,16 @@ public class BookingController {
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                // Send get_padel_centers request
                 JSONObject request = new JSONObject();
                 request.put("action", "get_padel_centers");
                 out.print(request.toString() + "\n");
                 out.flush();
 
-                // Read response
                 String response = in.readLine();
                 if (response == null) {
                     throw new Exception("No response from server");
                 }
 
-                // Parse response
                 JSONObject jsonResponse = new JSONObject(response);
                 String status = jsonResponse.optString("status", "error");
                 if ("success".equals(status)) {
@@ -329,17 +316,10 @@ public class BookingController {
         card.setPrefWidth(1100);
         card.setMaxWidth(1100);
 
-        // Left section: image, name, and location
         HBox leftSection = new HBox(10);
         leftSection.setAlignment(Pos.CENTER_LEFT);
 
-        // Load and style the image
-        ImageView imageView = new ImageView();
-        try {
-            imageView.setImage(new Image(imagePath));
-        } catch (Exception e) {
-            imageView.setImage(new Image(getClass().getResourceAsStream("/images/placeholder.png")));
-        }
+        ImageView imageView = createPlaceImage(imagePath);
         imageView.setFitWidth(120);
         imageView.setFitHeight(120);
         Rectangle clip = new Rectangle(120, 120);
@@ -347,7 +327,6 @@ public class BookingController {
         clip.setArcHeight(20);
         imageView.setClip(clip);
 
-        // Name and location details
         VBox details = new VBox(5);
         Label nameLabel = new Label(name);
         nameLabel.getStyleClass().add("padel-place-name");
@@ -359,13 +338,11 @@ public class BookingController {
         details.getChildren().addAll(nameLabel, locationLabel);
         leftSection.getChildren().addAll(imageView, details);
 
-        // Right section: available times in a grid
         GridPane timeGrid = new GridPane();
         timeGrid.setHgap(10);
         timeGrid.setVgap(10);
         timeGrid.setAlignment(Pos.CENTER_RIGHT);
 
-        // Add time buttons to the grid (5 columns max per row)
         int columns = 5;
         for (int j = 0; j < times.length(); j++) {
             String time = times.getString(j);
@@ -377,12 +354,58 @@ public class BookingController {
             timeGrid.add(timeBtn, col, row);
         }
 
-        // Add a spacer to push the grid to the right
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         card.getChildren().addAll(leftSection, spacer, timeGrid);
         return card;
+    }
+
+    /**
+     * Creates an image view for a padel place card using a classpath resource.
+     *
+     * @param imagePath The path to the image resource (e.g., /images/padel_center.jpg).
+     * @return An ImageView with the loaded image or a fallback.
+     */
+    private ImageView createPlaceImage(String imagePath) {
+        Image image;
+        try {
+            if (imagePath == null || imagePath.trim().isEmpty() || !imagePath.startsWith("/images/")) {
+                System.err.println("Invalid image path: '" + imagePath + "', using placeholder.");
+                image = loadResourceImage(PLACEHOLDER_IMAGE_PATH);
+            } else {
+                System.out.println("Loading image: " + imagePath);
+                image = loadResourceImage(imagePath);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to load image: '" + imagePath + "', using placeholder. Error: " + e.getMessage());
+            image = loadResourceImage(PLACEHOLDER_IMAGE_PATH);
+        }
+
+        return new ImageView(image);
+    }
+
+    /**
+     * Loads an image from a classpath resource, falling back to a transparent image if loading fails.
+     *
+     * @param resourcePath The classpath resource path (e.g., /images/padel_center.jpg).
+     * @return The loaded Image or a transparent 1x1 image.
+     */
+    private Image loadResourceImage(String resourcePath) {
+        try {
+            InputStream stream = getClass().getResourceAsStream(resourcePath);
+            if (stream == null) {
+                throw new IOException("Resource not found: " + resourcePath);
+            }
+            Image image = new Image(stream);
+            if (image.isError()) {
+                throw new IOException("Image failed to load: " + resourcePath);
+            }
+            return image;
+        } catch (Exception e) {
+            System.err.println("Failed to load resource: '" + resourcePath + "'. Error: " + e.getMessage());
+            return new Image("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=");
+        }
     }
 
     /**
@@ -429,25 +452,22 @@ public class BookingController {
             if (node instanceof Button button) {
                 addButtonHoverEffects(button);
 
-                // Preserve existing FXML onAction handler
                 var existingHandler = button.getOnAction();
                 button.setOnAction(event -> {
                     setInactiveButtons();
                     button.getStyleClass().add("active");
 
-                    // Only trigger fallback navigation if no FXML handler exists
                     if (existingHandler == null) {
                         if (button == homeButton) {
                             goToHome();
                         } else if (button == bookingButton) {
-                           //nothing
+                            // nothing
                         } else if (button == subscriptionButton) {
                             goToSubscription();
                         } else if (button == gymButton) {
                             goToGym();
                         }
                     }
-                    // Let the FXML handler handle navigation if it exists
                     if (existingHandler != null) {
                         existingHandler.handle(event);
                     }

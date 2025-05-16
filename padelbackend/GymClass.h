@@ -15,7 +15,6 @@ private:
     std::string time;
     int capacity;
     std::vector<std::string> participants;
-    std::queue<std::string> waitlist;
     std::string imagePath;
 
 public:
@@ -24,9 +23,8 @@ public:
 
     GymClass();
 
-    bool bookClass(const std::string& memberId);
-
-    bool removeMember(const std::string& memberId);
+    bool bookClass(const std::string& memberId, bool* movedFromWaitlist = nullptr);
+    std::string removeMember(const std::string& memberId);
 
     std::vector<std::string> queueToVector(const std::queue<std::string>& q) const;
 
@@ -38,6 +36,8 @@ public:
     int getCapacity() const;
     int getCurrentParticipants() const;
     int getWaitlistSize() const;
+
+    std::queue<std::string> waitlist;
 };
 
 #endif

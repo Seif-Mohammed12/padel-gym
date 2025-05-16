@@ -21,7 +21,7 @@
 .nav-button {
     -fx-background-color: transparent;
     -fx-text-fill: white;
-    -fx-font-size: 16px;
+    -fx-font-size: 20px;
     -fx-font-weight: bold;
     -fx-font-family: "Arial";
     -fx-cursor: hand;
@@ -32,7 +32,6 @@
 }
 
 .nav-button:pressed {
-    -fx-background-color: rgba(30, 30, 50, 1.0);
     -fx-scale-x: 1;
     -fx-scale-y: 1;
 }
@@ -318,4 +317,54 @@
 .workout-history-table {
     -fx-background-color: #f9f9f9;
     -fx-border-color: #ddd;
+}
+
+.subscription-prompt-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1a365d;
+}
+.subscription-prompt-text {
+    -fx-font-size: 16px;
+    -fx-fill: #4a5568;
+}
+.subscription-prompt-button {
+    -fx-font-size: 14px;
+    -fx-padding: 10 20;
+    -fx-background-color: #2563eb;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+}
+.subscription-prompt-button:hover {
+    -fx-background-color: #1d4ed8;
+}
+
+.workout-card {
+    -fx-background-color: #2d2d2d;
+    -fx-background-radius: 15;
+    -fx-padding: 15;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 0);
+    -fx-min-width: 250;
+    -fx-max-width: 250;
+}
+
+.workout-card:hover {
+    -fx-background-color: #363636;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 15, 0, 0, 0);
+}
+
+.workout-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.workout-detail {
+    -fx-font-size: 14px;
+    -fx-text-fill: #b3b3b3;
+}
+
+.workout-date {
+    -fx-font-size: 12px;
+    -fx-text-fill: #808080;
 }

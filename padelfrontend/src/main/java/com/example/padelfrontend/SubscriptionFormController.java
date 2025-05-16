@@ -53,12 +53,14 @@ public class SubscriptionFormController {
         formCard.setFocusTraversable(true);
         firstNameField.requestFocus();
 
-
         // Clear fields
         firstNameField.clear();
         lastNameField.clear();
         phoneNumberField.clear();
         dobPicker.setValue(null);
+
+        // Set up phone number field with "+20" prefix
+        setupPhoneNumberField();
 
         // Add a TextField and Error Label for DOB entry
         setupDobField();
@@ -69,25 +71,81 @@ public class SubscriptionFormController {
         if (context.isLoggedIn()) {
             firstNameField.setText(context.getFirstName() != null ? context.getFirstName() : "");
             lastNameField.setText(context.getLastName() != null ? context.getLastName() : "");
-            phoneNumberField.setText(context.getPhoneNumber() != null ? context.getPhoneNumber() : "");
-            if (context.getDob() != null) {
+            String phoneNumber = context.getPhoneNumber();
+            phoneNumberField.setText(phoneNumber != null ? phoneNumber : "+20");
+
+            String dob = context.getDob();
+            if (dob != null && !dob.trim().isEmpty()) {
                 try {
-                    LocalDate dob = LocalDate.parse(context.getDob(), DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-                    dobPicker.setValue(dob);
-                    dobTextField.setText(context.getDob());
-                } catch (Exception e) {
-                    // Handle invalid date format in AppContext
-                    dobPicker.setValue(null);
-                    dobTextField.clear();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                    LocalDate dobDate = LocalDate.parse(dob, formatter);
+                    dobPicker.setValue(dobDate);
+                } catch (DateTimeParseException e) {
+                    System.err.println("Failed to parse DOB from context: " + dob + ". Error: " + e.getMessage());
+                    // Optionally clear the date picker or set a default value
+
                 }
+            } else {
+                dobPicker.setValue(null); // Clear date picker if DOB is null or empty
             }
+
         }
 
         // Restrict DatePicker to a reasonable range (e.g., 1900 to current year)
         restrictDatePickerRange();
     }
 
+    /**
+     * Sets up the phone number field to enforce the "+20" prefix and allow only digits after it.
+     */
+    private void setupPhoneNumberField() {
+        // Initialize with "+20"
+        phoneNumberField.setText("+20");
+        phoneNumberField.setPromptText("+201234567890");
 
+        // Add listener to enforce "+20" prefix and restrict input to digits
+        phoneNumberField.textProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue == null) {
+                phoneNumberField.setText("+20");
+                return;
+            }
+
+            // Ensure the "+20" prefix is always present
+            if (!newValue.startsWith("+20")) {
+                phoneNumberField.setText("+20" + newValue.replaceAll("[^\\d]", ""));
+                return;
+            }
+
+            // Remove non-digits after "+20" and enforce length
+            String digits = newValue.substring(3).replaceAll("[^\\d]", "");
+            String result = "+20" + digits;
+
+            // Limit to 13 characters total (3 for "+20", 10 for the number)
+            if (result.length() > 13) {
+                result = result.substring(0, 13);
+            }
+
+            if (!result.equals(newValue)) {
+                int caretPosition = phoneNumberField.getCaretPosition();
+                phoneNumberField.setText(result);
+                phoneNumberField.positionCaret(Math.min(caretPosition, result.length()));
+            }
+        });
+
+        // Prevent cursor from moving before "+20"
+        phoneNumberField.caretPositionProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue.intValue() < 3) {
+                phoneNumberField.positionCaret(3);
+            }
+        });
+
+        // Prevent selection of "+20" for deletion
+        phoneNumberField.selectionProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection.getStart() < 3) {
+                phoneNumberField.selectRange(3, Math.max(3, newSelection.getEnd()));
+            }
+        });
+    }
 
     /**
      * Sets up the DOB field with a DatePicker, a TextField for direct entry, and an error label.
@@ -153,7 +211,6 @@ public class SubscriptionFormController {
                 dobErrorLabel.setVisible(true);
             }
         });
-
 
         // Sync DatePicker with TextField
         dobPicker.valueProperty().addListener((obs, oldValue, newValue) -> {
@@ -252,7 +309,7 @@ public class SubscriptionFormController {
     private void handleConfirm() {
         String firstName = firstNameField.getText().trim();
         String lastName = lastNameField.getText().trim();
-        String phoneNumber = phoneNumberField.getText().trim();
+        String phoneNumber = phoneNumberField.getText().trim(); // Includes "+20"
         LocalDate dob = dobPicker.getValue();
 
         // Validation
@@ -264,8 +321,8 @@ public class SubscriptionFormController {
             showAlert("Error", "Last name is required.");
             return;
         }
-        if (phoneNumber.isEmpty() || !phoneNumber.matches("\\d{10,15}")) {
-            showAlert("Error", "Please enter a valid phone number (10-15 digits).");
+        if (phoneNumber.length() <= 3 || !phoneNumber.startsWith("+20") || !phoneNumber.substring(3).matches("\\d{10,12}")) {
+            showAlert("Error", "Please enter a valid phone number (10-12 digits after +20).");
             return;
         }
         if (dob == null || dob.isAfter(LocalDate.now().minusYears(16))) {
@@ -276,11 +333,11 @@ public class SubscriptionFormController {
         // Format DOB as dd-MM-yyyy
         String dobString = dob.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 
-        // Update AppContext with the validated data
+        // Update AppContext with the validated data (store with "+20")
         AppContext context = AppContext.getInstance();
         context.setFirstName(firstName);
         context.setLastName(lastName);
-        context.setPhoneNumber(phoneNumber);
+        context.setPhoneNumber(phoneNumber); // Store with "+20"
         context.setDob(dobString);
 
         // Close the overlay

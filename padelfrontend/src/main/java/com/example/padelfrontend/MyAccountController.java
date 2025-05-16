@@ -129,6 +129,9 @@ public class MyAccountController {
                 if ("success".equals(status)) {
                     JSONArray subscriptions = jsonResponse.getJSONArray("data");
                     Platform.runLater(() -> populateSubscriptions(subscriptions));
+                    AppContext context = AppContext.getInstance();
+                    context.setSubscribedPlanName(!subscriptions.isEmpty() ? subscriptions.getJSONObject(0).optString("planName", "Unknown Plan") : "No active subscriptions");
+                    context.setSubscribedDuration(!subscriptions.isEmpty() ? subscriptions.getJSONObject(0).optString("duration", "Unknown Duration") : "Unknown Duration");
                 } else {
                     throw new Exception(jsonResponse.optString("message", "Failed to fetch subscriptions"));
                 }
@@ -224,22 +227,22 @@ public class MyAccountController {
 
     @FXML
     private void goToHome() {
-        navigateToPage("home.fxml", 1);
+        fadeToPage("home.fxml");
     }
 
     @FXML
     private void goToBooking() {
-        navigateToPage("BookingPage.fxml", 1);
+        fadeToPage("BookingPage.fxml");
     }
 
     @FXML
     private void goToSubscription() {
-        navigateToPage("subscription.fxml", 1);
+        fadeToPage("subscription.fxml");
     }
 
     @FXML
     private void goToGym() {
-        navigateToPage("gym.fxml", 1);
+        fadeToPage("gym.fxml");
     }
 
     @FXML
