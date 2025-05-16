@@ -1,22 +1,14 @@
 [
     {
+        "bookingCount": 2,
         "email": "",
         "firstName": "Seif",
+        "isVIP": false,
         "lastName": "Mohammed",
-        "memberId": "MEM129093",
+        "memberId": "MEM724099",
         "password": "Seso1206@",
         "phoneNumber": "+201099228486",
         "role": "user",
         "username": "seif_12"
-    },
-    {
-        "email": "",
-        "firstName": "Mina",
-        "lastName": "Gimmy",
-        "memberId": "MEM419438",
-        "password": "Seso1206@",
-        "phoneNumber": "+201234567890",
-        "role": "user",
-        "username": "gimmy_11"
     }
 ]

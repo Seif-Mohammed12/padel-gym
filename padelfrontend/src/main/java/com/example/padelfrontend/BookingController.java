@@ -1,8 +1,6 @@
 package com.example.padelfrontend;
 
-import javafx.animation.Interpolator;
-import javafx.animation.ScaleTransition;
-import javafx.animation.TranslateTransition;
+import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -40,19 +38,20 @@ public class BookingController {
     @FXML private Button bookingButton;
     @FXML private Button subscriptionButton;
     @FXML private Button gymButton;
-    @FXML private Button homeButton, loginButton;
+    @FXML private Button homeButton, loginButton, exploreButton;
     @FXML private HBox navbar;
     @FXML private DatePicker datePicker;
     @FXML private ComboBox<PadelCenter> centerSearchField;
     @FXML private ImageView dropdownicon;
     @FXML private ImageView calendaricon;
-
+    private VBox currentOpenPanel = null; // New class field to track the open panel
     private boolean isComboBoxOpen = false;
     private boolean isDatePickerOpen = false;
     private static final Duration TRANSITION_DURATION = Duration.millis(400);
     private boolean isUpdating = false;
     private boolean justSelected = false;
     private ObservableList<PadelCenter> allCenters;
+    private JSONArray allPadelCenters;
     private long lastUpdateTime = 0;
     private static final long DEBOUNCE_DELAY = 100;
     private static final String PLACEHOLDER_IMAGE_PATH = "/images/placeholder.png";
@@ -80,6 +79,7 @@ public class BookingController {
     @FXML
     public void initialize() {
         bookingButton.getStyleClass().add("active");
+        datePicker.setValue(LocalDate.now()); // Set DatePicker to today's date
         configureDatePicker(datePicker, LocalDate.now());
         setupIcons();
         setupNavbar();
@@ -87,6 +87,7 @@ public class BookingController {
         applyDropdownStyles();
         fetchPadelPlaces();
         updateLoginButton();
+        addButtonHoverEffects(exploreButton); // Add hover effects to Explore button
     }
 
     /**
@@ -256,10 +257,10 @@ public class BookingController {
                 JSONObject jsonResponse = new JSONObject(response);
                 String status = jsonResponse.optString("status", "error");
                 if ("success".equals(status)) {
-                    JSONArray centers = jsonResponse.getJSONArray("data");
+                    allPadelCenters = jsonResponse.getJSONArray("data"); // Store raw data
                     Platform.runLater(() -> {
-                        populatePadelCenters(centers);
-                        loadPadelPlaces(centers);
+                        populatePadelCenters(allPadelCenters);
+                        loadPadelPlaces(allPadelCenters); // Load all places initially
                     });
                 } else {
                     throw new Exception(jsonResponse.optString("message", "Failed to fetch padel centers"));
@@ -316,6 +317,7 @@ public class BookingController {
         card.setPrefWidth(1100);
         card.setMaxWidth(1100);
 
+        // Left section with image and details
         HBox leftSection = new HBox(10);
         leftSection.setAlignment(Pos.CENTER_LEFT);
 
@@ -330,35 +332,341 @@ public class BookingController {
         VBox details = new VBox(5);
         Label nameLabel = new Label(name);
         nameLabel.getStyleClass().add("padel-place-name");
-        nameLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white; -fx-padding: 15 0 0 0");
+        nameLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;");
 
         Label locationLabel = new Label(location);
-        locationLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #b0b0b0; -fx-padding: 0 0 0 0");
+        locationLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #b0b0b0;");
 
-        details.getChildren().addAll(nameLabel, locationLabel);
+        String dateText = datePicker.getValue() != null ?
+                datePicker.getValue().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) :
+                "No date selected";
+        Label dateLabel = new Label("Date: " + dateText);
+        dateLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #b0b0b0;");
+
+        details.getChildren().addAll(nameLabel, locationLabel, dateLabel);
         leftSection.getChildren().addAll(imageView, details);
 
+        // Right section container
+        VBox rightSection = new VBox();
+        rightSection.setAlignment(Pos.TOP_RIGHT);
+        rightSection.setMaxWidth(Double.MAX_VALUE);
+
+        // Time slots grid
         GridPane timeGrid = new GridPane();
         timeGrid.setHgap(10);
         timeGrid.setVgap(10);
-        timeGrid.setAlignment(Pos.CENTER_RIGHT);
+        timeGrid.setAlignment(Pos.TOP_RIGHT);
 
+        // Booking panel (hidden by default)
+        VBox bookingPanel = new VBox(15);
+        bookingPanel.getStyleClass().add("booking-panel");
+        bookingPanel.setVisible(false);
+        bookingPanel.setManaged(false);
+        bookingPanel.setOpacity(0);
+        bookingPanel.setPadding(new Insets(15));
+        bookingPanel.setAlignment(Pos.TOP_RIGHT);
+
+        // Booking panel content
+        Label bookingTitle = new Label("BOOKING DETAILS");
+        bookingTitle.getStyleClass().add("booking-title");
+
+        HBox courtInfo = new HBox(10);
+        Label courtIcon = new Label("🏟️");
+        Label courtName = new Label(name);
+        courtInfo.getChildren().addAll(courtIcon, courtName);
+        courtInfo.setAlignment(Pos.CENTER_LEFT);
+
+        HBox timeInfo = new HBox(10);
+        Label timeIcon = new Label("🕒");
+        Label timeLabel = new Label();
+        timeInfo.getChildren().addAll(timeIcon, timeLabel);
+        timeInfo.setAlignment(Pos.CENTER_LEFT);
+
+        HBox dateInfo = new HBox(10);
+        Label dateIcon = new Label("📅");
+        Label dateInfoLabel = new Label(dateText);
+        dateInfo.getChildren().addAll(dateIcon, dateInfoLabel);
+        dateInfo.setAlignment(Pos.CENTER_LEFT);
+
+        Button bookNowBtn = new Button("CONFIRM BOOKING");
+        bookNowBtn.getStyleClass().add("book-now-button");
+
+        Button cancelBtn = new Button("CANCEL BOOKING");
+        cancelBtn.getStyleClass().add("cancel-button"); // Add CSS class for styling
+        cancelBtn.setVisible(false); // Hidden by default
+
+        bookingPanel.getChildren().addAll(
+                bookingTitle,
+                new Separator(),
+                courtInfo,
+                timeInfo,
+                dateInfo,
+                bookNowBtn,
+                cancelBtn
+        );
+
+        // Track selected time button
+        final Button[] selectedTimeButton = {null};
+        AppContext context = AppContext.getInstance();
+        String memberId = context.isLoggedIn() ? context.getMemberId() : null;
+
+        // Booked times grid (below available times)
+        GridPane bookedGrid = new GridPane();
+        bookedGrid.setHgap(10);
+        bookedGrid.setVgap(10);
+        bookedGrid.setAlignment(Pos.TOP_RIGHT);
+
+        // Check for booked times
+        JSONObject place = findPlaceByName(name);
+        JSONArray bookedTimes = place != null && place.has("bookedTimes") ? place.getJSONObject("bookedTimes").names() : new JSONArray();
+        int bookedIndex = 0;
+        int bookedColumns = 5;
+
+        if (bookedTimes != null && memberId != null) {
+            for (int j = 0; j < bookedTimes.length(); j++) {
+                String time = bookedTimes.getString(j);
+                String bookedMemberId = place.getJSONObject("bookedTimes").getString(time);
+                if (bookedMemberId.equals(memberId)) {
+                    Button bookedBtn = new Button(time + " (Booked)");
+                    bookedBtn.getStyleClass().add("booked-button"); // Style for booked times
+                    bookedBtn.setOnAction(e -> {
+                        timeLabel.setText(time);
+                        bookNowBtn.setVisible(false);
+                        cancelBtn.setVisible(true);
+
+                        if (!bookingPanel.isVisible()) {
+                            bookingPanel.setVisible(true);
+                            bookingPanel.setManaged(true);
+                            FadeTransition fadeIn = new FadeTransition(Duration.millis(300), bookingPanel);
+                            fadeIn.setFromValue(0);
+                            fadeIn.setToValue(1);
+                            fadeIn.play();
+                        }
+                        selectedTimeButton[0] = bookedBtn;
+                    });
+
+                    int row = bookedIndex / bookedColumns;
+                    int col = bookedIndex % bookedColumns;
+                    bookedGrid.add(bookedBtn, col, row);
+                    bookedIndex++;
+                }
+            }
+        }
+
+        // Available time slots
         int columns = 5;
         for (int j = 0; j < times.length(); j++) {
             String time = times.getString(j);
             Button timeBtn = new Button(time);
             timeBtn.getStyleClass().add("time-button");
 
+            timeBtn.setOnAction(e -> {
+                timeLabel.setText(time);
+                bookNowBtn.setVisible(true);
+                cancelBtn.setVisible(false);
+
+                if (selectedTimeButton[0] == timeBtn) {
+                    FadeTransition fadeOut = new FadeTransition(Duration.millis(200), bookingPanel);
+                    fadeOut.setFromValue(1);
+                    fadeOut.setToValue(0);
+                    fadeOut.setOnFinished(event -> {
+                        bookingPanel.setVisible(false);
+                        bookingPanel.setManaged(false);
+                    });
+                    fadeOut.play();
+                    selectedTimeButton[0] = null;
+                } else {
+                    if (!bookingPanel.isVisible()) {
+                        bookingPanel.setVisible(true);
+                        bookingPanel.setManaged(true);
+                        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), bookingPanel);
+                        fadeIn.setFromValue(0);
+                        fadeIn.setToValue(1);
+                        fadeIn.play();
+                    }
+                    selectedTimeButton[0] = timeBtn;
+                }
+            });
+
+            bookNowBtn.setOnAction(e -> {
+                bookPadelCourt(name, timeLabel.getText(), datePicker.getValue());
+                FadeTransition fadeOut = new FadeTransition(Duration.millis(200), bookingPanel);
+                fadeOut.setFromValue(1);
+                fadeOut.setToValue(0);
+                fadeOut.setOnFinished(event -> {
+                    bookingPanel.setVisible(false);
+                    bookingPanel.setManaged(false);
+                });
+                fadeOut.play();
+                selectedTimeButton[0] = null;
+            });
+
+            cancelBtn.setOnAction(e -> {
+                cancelPadelCourt(name, timeLabel.getText(), datePicker.getValue());
+                FadeTransition fadeOut = new FadeTransition(Duration.millis(200), bookingPanel);
+                fadeOut.setFromValue(1);
+                fadeOut.setToValue(0);
+                fadeOut.setOnFinished(event -> {
+                    bookingPanel.setVisible(false);
+                    bookingPanel.setManaged(false);
+                });
+                fadeOut.play();
+                selectedTimeButton[0] = null;
+            });
+
             int row = j / columns;
             int col = j % columns;
             timeGrid.add(timeBtn, col, row);
         }
 
+        // Add grids to right section
+        rightSection.getChildren().addAll(timeGrid, bookedGrid, bookingPanel);
+
+        // Main content container
+        VBox cardContent = new VBox(15);
+        cardContent.setAlignment(Pos.TOP_CENTER);
+
+        // Horizontal content with left section and right section
+        HBox mainContent = new HBox();
+        mainContent.setAlignment(Pos.CENTER_LEFT);
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
+        mainContent.getChildren().addAll(leftSection, spacer, rightSection);
 
-        card.getChildren().addAll(leftSection, spacer, timeGrid);
+        cardContent.getChildren().add(mainContent);
+        card.getChildren().add(cardContent);
+
         return card;
+    }
+
+    private JSONObject findPlaceByName(String name) {
+        for (int i = 0; i < allPadelCenters.length(); i++) {
+            JSONObject place = allPadelCenters.getJSONObject(i);
+            if (place.optString("name").equals(name)) {
+                return place;
+            }
+        }
+        return null;
+    }
+
+    private void cancelPadelCourt(String courtName, String time, LocalDate date) {
+        AppContext context = AppContext.getInstance();
+        if (!context.isLoggedIn()) {
+            showAlert("Error", "You must be logged in to cancel a booking.");
+            return;
+        }
+        if (date == null) {
+            showAlert("Error", "Please select a date.");
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                Socket socket = new Socket("localhost", 8080);
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+                JSONObject request = new JSONObject();
+                request.put("action", "cancel_padel_booking");
+                JSONObject data = new JSONObject();
+                data.put("courtName", courtName);
+                data.put("time", time);
+                data.put("memberId", context.getMemberId());
+                data.put("date", date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+                request.put("data", data);
+                out.print(request.toString() + "\n");
+                out.flush();
+
+                String response = in.readLine();
+                if (response == null) {
+                    throw new Exception("No response from server");
+                }
+
+                JSONObject jsonResponse = new JSONObject(response);
+                String status = jsonResponse.optString("status", "error");
+                Platform.runLater(() -> {
+                    if ("success".equals(status)) {
+                        showAlert("Success", "Booking for " + courtName + " at " + time + " on " + date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " cancelled!");
+                        fetchPadelPlaces(); // Refresh UI
+                    } else {
+                        showAlert("Error", jsonResponse.optString("message", "Failed to cancel booking"));
+                    }
+                });
+
+                socket.close();
+            } catch (Exception ex) {
+                Platform.runLater(() -> showAlert("Error", "Failed to cancel booking: " + ex.getMessage()));
+            }
+        }).start();
+    }
+
+    @FXML
+    private void onExploreClicked() {
+        PadelCenter selectedCenter = centerSearchField.getSelectionModel().getSelectedItem();
+        if (selectedCenter == null) {
+            loadPadelPlaces(allPadelCenters); // Show all centers if no filter
+        } else {
+            JSONArray filteredCenters = new JSONArray();
+            for (int i = 0; i < allPadelCenters.length(); i++) {
+                JSONObject center = allPadelCenters.getJSONObject(i);
+                if (center.getString("name").equals(selectedCenter.getName())) {
+                    filteredCenters.put(center);
+                }
+            }
+            loadPadelPlaces(filteredCenters); // Show only the selected center
+        }
+    }
+
+    private void bookPadelCourt(String courtName, String time, LocalDate date) {
+        AppContext context = AppContext.getInstance();
+        if (!context.isLoggedIn()) {
+            showAlert("Error", "You must be logged in to book a court.");
+            return;
+        }
+        if (date == null) {
+            showAlert("Error", "Please select a date.");
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                Socket socket = new Socket("localhost", 8080);
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+                JSONObject request = new JSONObject();
+                request.put("action", "book_padel_court");
+                JSONObject data = new JSONObject();
+                data.put("courtName", courtName);
+                data.put("time", time);
+                data.put("memberId", context.getMemberId());
+                data.put("memberName", context.getFirstName());
+                data.put("date", date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+                request.put("data", data);
+                out.print(request.toString() + "\n");
+                out.flush();
+
+                String response = in.readLine();
+                if (response == null) {
+                    throw new Exception("No response from server");
+                }
+
+                JSONObject jsonResponse = new JSONObject(response);
+                String status = jsonResponse.optString("status", "error");
+                Platform.runLater(() -> {
+                    if ("success".equals(status)) {
+                        showAlert("Success", "Court " + courtName + " booked for " + time + " on " + date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "!");
+                        fetchPadelPlaces(); // Refresh UI, closing all panels
+                    } else {
+                        showAlert("Error", jsonResponse.optString("message", "Failed to book court"));
+                    }
+                });
+
+                socket.close();
+            } catch (Exception ex) {
+                Platform.runLater(() -> showAlert("Error", "Failed to book court: " + ex.getMessage()));
+            }
+        }).start();
     }
 
     /**
@@ -412,13 +720,27 @@ public class BookingController {
      * Sets up the date picker with a custom format and restricts past dates.
      */
     private void configureDatePicker(DatePicker datePicker, LocalDate today) {
-        if (datePicker.getValue() != null && datePicker.getValue().isBefore(today)) {
-            datePicker.setValue(today);
-        }
+        datePicker.setValue(today);
         datePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null && newValue.isBefore(today)) {
                 datePicker.setValue(today);
             }
+            Platform.runLater(() -> {
+                if (centerSearchField.getSelectionModel().getSelectedItem() != null) {
+                    onExploreClicked();
+                } else {
+                    loadPadelPlaces(allPadelCenters);
+                }
+                // Update open booking panel's date label
+                if (currentOpenPanel != null) {
+                    for (Node node : currentOpenPanel.getChildren()) {
+                        if (node instanceof Label && ((Label) node).getText().startsWith("Date: ")) {
+                            String dateText = newValue != null ? newValue.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "No date selected";
+                            ((Label) node).setText("Date: " + dateText);
+                        }
+                    }
+                }
+            });
         });
 
         datePicker.setConverter(new StringConverter<LocalDate>() {

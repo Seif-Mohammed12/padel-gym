@@ -98,6 +98,13 @@ build CMakeFiles/padelbackend.dir/WorkoutHistory.cpp.obj: CXX_COMPILER__padelbac
   OBJECT_DIR = CMakeFiles\padelbackend.dir
   OBJECT_FILE_DIR = CMakeFiles\padelbackend.dir
 
+build CMakeFiles/padelbackend.dir/padelbooking.cpp.obj: CXX_COMPILER__padelbackend_unscanned_Debug C$:/Users/seife/padel-gym/padelbackend/padelbooking.cpp || cmake_object_order_depends_target_padelbackend
+  DEP_FILE = CMakeFiles\padelbackend.dir\padelbooking.cpp.obj.d
+  FLAGS = -g -std=gnu++20 -fdiagnostics-color=always
+  INCLUDES = -IC:/Users/seife/padel-gym/padelbackend/include
+  OBJECT_DIR = CMakeFiles\padelbackend.dir
+  OBJECT_FILE_DIR = CMakeFiles\padelbackend.dir
+
 build CMakeFiles/padelbackend.dir/server.cpp.obj: CXX_COMPILER__padelbackend_unscanned_Debug C$:/Users/seife/padel-gym/padelbackend/server.cpp || cmake_object_order_depends_target_padelbackend
   DEP_FILE = CMakeFiles\padelbackend.dir\server.cpp.obj.d
   FLAGS = -g -std=gnu++20 -fdiagnostics-color=always
@@ -113,7 +120,7 @@ build CMakeFiles/padelbackend.dir/server.cpp.obj: CXX_COMPILER__padelbackend_uns
 #############################################
 # Link the executable padelbackend.exe
 
-build padelbackend.exe: CXX_EXECUTABLE_LINKER__padelbackend_Debug CMakeFiles/padelbackend.dir/FileManager.cpp.obj CMakeFiles/padelbackend.dir/GymClass.cpp.obj CMakeFiles/padelbackend.dir/GymSystem.cpp.obj CMakeFiles/padelbackend.dir/LoginSystem.cpp.obj CMakeFiles/padelbackend.dir/Registration.cpp.obj CMakeFiles/padelbackend.dir/SubscriptionManager.cpp.obj CMakeFiles/padelbackend.dir/WorkoutHistory.cpp.obj CMakeFiles/padelbackend.dir/server.cpp.obj
+build padelbackend.exe: CXX_EXECUTABLE_LINKER__padelbackend_Debug CMakeFiles/padelbackend.dir/FileManager.cpp.obj CMakeFiles/padelbackend.dir/GymClass.cpp.obj CMakeFiles/padelbackend.dir/GymSystem.cpp.obj CMakeFiles/padelbackend.dir/LoginSystem.cpp.obj CMakeFiles/padelbackend.dir/Registration.cpp.obj CMakeFiles/padelbackend.dir/SubscriptionManager.cpp.obj CMakeFiles/padelbackend.dir/WorkoutHistory.cpp.obj CMakeFiles/padelbackend.dir/padelbooking.cpp.obj CMakeFiles/padelbackend.dir/server.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lws2_32  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\padelbackend.dir

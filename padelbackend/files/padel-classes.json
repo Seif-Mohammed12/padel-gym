@@ -1,9 +1,9 @@
 [
     {
         "availableTimes": [
+            "02:00 PM",
             "10:00 AM",
-            "12:00 PM",
-            "02:00 PM"
+            "12:00 PM"
         ],
         "image": "/images/padelace.jpg",
         "location": "Zamalek, Cairo",

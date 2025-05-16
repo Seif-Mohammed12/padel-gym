@@ -64,7 +64,7 @@
                         </ImageView>
                     </StackPane>
 
-                    <Button fx:id="exploreButton" styleClass="explore-button" text="Explore" />
+                    <Button fx:id="exploreButton" styleClass="explore-button" text="Explore" onAction="#onExploreClicked" />
                 </HBox>
 
                 <!-- Dynamic content gets inserted here -->

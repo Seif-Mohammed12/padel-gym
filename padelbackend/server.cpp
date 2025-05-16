@@ -6,6 +6,8 @@
 #include <sstream>
 #include <vector>
 #include <random>
+#include <algorithm>
+#include <cctype>
 #include "include/json.hpp"
 #include "FileManager.h"
 #include "GymClass.h"
@@ -14,6 +16,7 @@
 #include "WorkoutHistory.h"
 #include "Registration.h"
 #include "LoginSystem.h"
+#include "padelbooking.h"
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -21,15 +24,27 @@ using json = nlohmann::json;
 
 const int PORT = 8080;
 
-// SECTION: Global Instances
+//=============================================================================
+// Global System Instances
+// Core system component instantiation
+//=============================================================================
+
 GymSystem gymSystem;
 SubscriptionManager subscriptionManager;
 WorkoutHistory workoutHistory;
 Registration registration;
 LoginSystem loginSystem;
+BookingSystem bookingSystem;
+CourtSelection courtSelection;
 
-// SECTION: Utility Functions
-// Splits a string by a delimiter and trims whitespace
+//=============================================================================
+// Utility Functions
+// Helper functions for common operations
+//=============================================================================
+
+/*
+ * Splits a string into a vector of substrings based on a delimiter, trimming whitespace from each token.
+ * */
 std::vector<std::string> split(const std::string &str, char delimiter)
 {
     std::vector<std::string> tokens;
@@ -47,7 +62,10 @@ std::vector<std::string> split(const std::string &str, char delimiter)
     return tokens;
 }
 
-// Sends a JSON response to the client socket
+
+/*
+ * Sends a JSON response to the client socket, handling potential send errors.
+ * */
 void sendResponse(SOCKET clientSocket, const json &response)
 {
     std::string responseStr = response.dump();
@@ -60,8 +78,14 @@ void sendResponse(SOCKET clientSocket, const json &response)
     send(clientSocket, "\n", 1, 0);
 }
 
-// SECTION: Data Management Functions
-// Loads gym classes from a file
+//=============================================================================
+// Data Management Functions
+// File I/O operations for loading and saving data
+//=============================================================================
+
+/*
+ * Loads gym classes from a JSON file into a vector of GymClass objects.
+ * */
 std::vector<GymClass> loadGymClasses(const std::string &filename)
 {
     json data = FileManager::load(filename);
@@ -76,7 +100,9 @@ std::vector<GymClass> loadGymClasses(const std::string &filename)
     return classes;
 }
 
-// Saves gym classes to a file
+/*
+ * Saves a vector of GymClass objects to a JSON file.
+ * */
 void saveGymClasses(const std::vector<GymClass> &classes, const std::string &filename)
 {
     json data = json::array();
@@ -87,8 +113,14 @@ void saveGymClasses(const std::vector<GymClass> &classes, const std::string &fil
     FileManager::save(data, filename);
 }
 
-// SECTION: User Management Handlers
-// Handles user signup requests
+//=============================================================================
+// User Management Handlers
+// Functions for handling user-related operations
+//=============================================================================
+
+/*
+ * Processes user signup requests, registering a new user and saving their data.
+ * */
 json handleSignup(const json &receivedJson)
 {
     try
@@ -110,6 +142,19 @@ json handleSignup(const json &receivedJson)
         {
             return {{"status", "error"}, {"message", errorMsg}};
         }
+        json users = FileManager::load("data.json");
+        if (!users.is_array())
+            users = json::array();
+        for (auto &user : users)
+        {
+            if (user["memberId"] == memberId)
+            {
+                user["bookingCount"] = 0;
+                user["isVIP"] = false;
+                break;
+            }
+        }
+        FileManager::save(users, "data.json");
         return {
             {"status", "success"},
             {"message", "User registered successfully"},
@@ -127,70 +172,65 @@ json handleSignup(const json &receivedJson)
     }
 }
 
-// Handles user login requests
-json handleLogin(const json& receivedJson) {
+/*
+ * Handles user login requests, authenticating users or staff based on username and password.
+ * */
+json handleLogin(const json &receivedJson)
+{
     std::string username = receivedJson.value("username", "");
     std::string password = receivedJson.value("password", "");
 
-    if (username.empty() || password.empty()) {
+    if (username.empty() || password.empty())
+    {
         return {{"status", "error"}, {"message", "Username and password are required"}};
     }
 
     json users = loginSystem.loadUserData();
     json loggedInUser;
     bool userFound = false;
-    for (const auto& user : users) {
-        if (user["username"] == username && user["password"] == password) {
+    for (const auto &user : users)
+    {
+        if (user["username"] == username && user["password"] == password)
+        {
             loggedInUser = user;
             userFound = true;
             break;
         }
     }
 
-    if (userFound) {
+    if (userFound)
+    {
         std::string role = loggedInUser.value("role", "user");
-        if (role != "user") {
+        if (role != "user")
+        {
             return {{"status", "error"}, {"message", "Invalid role in user data: " + role}};
         }
         return {
-                {"status", "success"},
-                {"message", "Login successful"},
-                {"data", {
-                                   {"username", loggedInUser["username"]},
-                                   {"memberId", loggedInUser["memberId"]},
-                                   {"firstName", loggedInUser["firstName"]},
-                                   {"lastName", loggedInUser["lastName"]},
-                                   {"role", "user"},
-                                   {"phoneNumber", loggedInUser["phoneNumber"]},
-                                   {"email", loggedInUser["email"]}
-                           }}
-        };
+            {"status", "success"},
+            {"message", "Login successful"},
+            {"data", {{"username", loggedInUser["username"]}, {"memberId", loggedInUser["memberId"]}, {"firstName", loggedInUser["firstName"]}, {"lastName", loggedInUser["lastName"]}, {"role", "user"}, {"phoneNumber", loggedInUser["phoneNumber"]}, {"email", loggedInUser["email"]}}}};
     }
 
     json staffData = FileManager::load("staff.json");
-    if (!staffData.is_array()) staffData = json::array();
-    for (const auto& staff : staffData) {
-        if (staff["username"] == username && staff["password"] == password && staff["role"] == "manager") {
+    if (!staffData.is_array())
+        staffData = json::array();
+    for (const auto &staff : staffData)
+    {
+        if (staff["username"] == username && staff["password"] == password && staff["role"] == "manager")
+        {
             return {
-                    {"status", "success"},
-                    {"message", "Login successful"},
-                    {"data", {
-                                       {"username", username},
-                                       {"memberId", ""},
-                                       {"firstName", ""},
-                                       {"lastName", ""},
-                                       {"role", "manager"},
-                                       {"phoneNumber", ""},
-                                       {"email", ""}
-                               }}
-            };
+                {"status", "success"},
+                {"message", "Login successful"},
+                {"data", {{"username", username}, {"memberId", ""}, {"firstName", ""}, {"lastName", ""}, {"role", "manager"}, {"phoneNumber", ""}, {"email", ""}}}};
         }
     }
 
     return {{"status", "error"}, {"message", "Invalid username or password"}};
 }
 
-// Handles password recovery requests
+/*
+ * Processes password recovery requests, returning the password for a given username.
+ * */
 json handleForgotPassword(const json &receivedJson, LoginSystem &loginSystem)
 {
     try
@@ -220,7 +260,9 @@ json handleForgotPassword(const json &receivedJson, LoginSystem &loginSystem)
     }
 }
 
-// Handles user info update requests
+/*
+ * Updates user information (e.g., name, email, phone) in the user data file.
+ * */
 json handleUpdateUserInfo(const json &receivedJson)
 {
     try
@@ -274,6 +316,16 @@ json handleUpdateUserInfo(const json &receivedJson)
     }
 }
 
+//=============================================================================
+// Class Management Handlers
+// Functions for managing gym classes and padel centers
+//=============================================================================
+
+//==============================Gym Classes====================================
+
+/*
+ * Retrieves the list of all gym classes from the JSON file.
+ * */
 json handleGetClasses()
 {
     std::vector<GymClass> classes = loadGymClasses("gym-classes.json");
@@ -285,7 +337,9 @@ json handleGetClasses()
     return {{"status", "success"}, {"data", jsonClasses}};
 }
 
-// Handles saving a new gym class or updating an existing one
+/*
+ * Saves a new gym class to the JSON file after validating its data.
+ * */
 json handleSaveGymClass(const json &receivedJson)
 {
     std::vector<GymClass> classes = loadGymClasses("gym-classes.json");
@@ -347,6 +401,9 @@ json handleSaveGymClass(const json &receivedJson)
         {"data", responseData}};
 }
 
+/*
+ * Books a gym class for a member, adding them to participants or waitlist and updating workout history.
+ * */
 json handleBookGymClass(const json &receivedJson)
 {
     if (!receivedJson.contains("data") || receivedJson["data"].is_null())
@@ -481,6 +538,9 @@ json handleBookGymClass(const json &receivedJson)
         {"waitlisted", !(booked || movedFromWaitlist)}};
 }
 
+/*
+ * Cancels a member's gym class booking, handling waitlist movement and workout history updates.
+ * */
 json handleCancelGymClass(const json &receivedJson)
 {
     if (!receivedJson.contains("data") || receivedJson["data"].is_null())
@@ -624,109 +684,9 @@ json handleCancelGymClass(const json &receivedJson)
         {"movedMemberId", movedMemberId}};
 }
 
-// Handles saving a new padel center
-json handleSavePadelCenter(const json &receivedJson)
-{
-    json centers = FileManager::load("padel-classes.json");
-    json centerData = receivedJson["data"];
-    if (!centerData.contains("name") || centerData["name"].get<std::string>().empty())
-    {
-        return {{"status", "error"}, {"message", "Center name is required"}};
-    }
-    if (!centerData.contains("times") || centerData["times"].get<std::string>().empty())
-    {
-        return {{"status", "error"}, {"message", "Available times are required"}};
-    }
-    if (!centerData.contains("image") || centerData["image"].get<std::string>().empty())
-    {
-        return {{"status", "error"}, {"message", "Image is required"}};
-    }
-    if (!centerData.contains("location") || centerData["location"].get<std::string>().empty())
-    {
-        return {{"status", "error"}, {"message", "Location is required"}};
-    }
-    std::string timesStr = centerData["times"].get<std::string>();
-    std::vector<std::string> timesList = split(timesStr, ',');
-    if (timesList.empty())
-    {
-        return {{"status", "error"}, {"message", "At least one available time is required"}};
-    }
-    json timesArray = json::array();
-    for (const auto &time : timesList)
-    {
-        timesArray.push_back(time);
-    }
-    centerData.erase("times");
-    centerData["availableTimes"] = timesArray;
-    centers.push_back(centerData);
-    FileManager::save(centers, "padel-classes.json");
-    return {
-        {"status", "success"},
-        {"message", "Padel center saved"},
-        {"data", centerData}};
-}
-
-// Handles updating an existing padel center
-json handleUpdatePadelCenter(const json &receivedJson)
-{
-    json centers = FileManager::load("padel-classes.json");
-    json oldData = receivedJson["oldData"];
-    json newData = receivedJson["newData"];
-    if (!newData.contains("name") || newData["name"].get<std::string>().empty())
-    {
-        return {{"status", "error"}, {"message", "Center name is required"}};
-    }
-    if (!newData.contains("times") || newData["times"].get<std::string>().empty())
-    {
-        return {{"status", "error"}, {"message", "Available times are required"}};
-    }
-    if (!newData.contains("image") || newData["image"].get<std::string>().empty())
-    {
-        return {{"status", "error"}, {"message", "Image is required"}};
-    }
-    if (!newData.contains("location") || newData["location"].get<std::string>().empty())
-    {
-        return {{"status", "error"}, {"message", "Location is required"}};
-    }
-    std::string timesStr = newData["times"].get<std::string>();
-    std::vector<std::string> timesList = split(timesStr, ',');
-    if (timesList.empty())
-    {
-        return {{"status", "error"}, {"message", "At least one available time is required"}};
-    }
-    json timesArray = json::array();
-    for (const auto &time : timesList)
-    {
-        timesArray.push_back(time);
-    }
-    newData.erase("times");
-    newData["availableTimes"] = timesArray;
-    json newCenters = json::array();
-    bool found = false;
-    for (const auto &center : centers)
-    {
-        if (center == oldData)
-        {
-            found = true;
-        }
-        else
-        {
-            newCenters.push_back(center);
-        }
-    }
-    if (!found)
-    {
-        return {{"status", "error"}, {"message", "Padel center to update not found"}};
-    }
-    newCenters.push_back(newData);
-    FileManager::save(newCenters, "padel-classes.json");
-    return {
-        {"status", "success"},
-        {"message", "Padel center updated"},
-        {"data", newData}};
-}
-
-// Handles updating an existing gym class
+/*
+ *Updates an existing gym class, including participants and waitlist, and updates workout history for moved members.
+ * */
 json handleUpdateGymClass(const json &receivedJson)
 {
     if (!receivedJson.contains("oldData") || !receivedJson.contains("newData") ||
@@ -893,30 +853,9 @@ json handleUpdateGymClass(const json &receivedJson)
         {"movedMembers", movedMembers}};
 }
 
-json handleGetPadelCenters()
-{
-    json centers = FileManager::load("padel-classes.json");
-    return {{"status", "success"}, {"data", centers}};
-}
-
-json handleDeletePadelCenter(const json &receivedJson)
-{
-    json centers = FileManager::load("padel-classes.json");
-    json centerToDelete = receivedJson["data"];
-    json newCenters = json::array();
-
-    for (const auto &center : centers)
-    {
-        if (center != centerToDelete)
-        {
-            newCenters.push_back(center);
-        }
-    }
-
-    FileManager::save(newCenters, "padel-classes.json");
-    return {{"status", "success"}, {"message", "Padel center deleted"}};
-}
-
+/*
+ * Deletes a gym class from the JSON file.
+ * */
 json handleDeleteGymClass(const json &receivedJson)
 {
     std::vector<GymClass> classes = loadGymClasses("gym-classes.json");
@@ -935,6 +874,350 @@ json handleDeleteGymClass(const json &receivedJson)
     return {{"status", "success"}, {"message", "Gym class deleted"}};
 }
 
+//=============================================================================
+//=============================Padel Booking==================================
+/*
+ * Books a padel court time slot for a member, updating court data and VIP status.
+ * */
+static json handleBookPadelCourt(const json& input) {
+    if (!input.contains("data") || !input["data"].is_object()) {
+        cout << "Invalid request format: missing or invalid 'data' field" << endl;
+        return {{"status", "error"}, {"message", "Invalid request format"}};
+    }
+    const json& data = input["data"];
+
+    string courtName = data.value("courtName", "");
+    string time = data.value("time", "");
+    string memberId = data.value("memberId", "");
+    string memberName = data.value("memberName", "");
+    string date = data.value("date", "");
+
+    cout << "Parsed book_padel_court request: courtName=" << courtName << ", time=" << time
+         << ", memberId=" << memberId << ", memberName=" << memberName << ", date=" << date << endl;
+
+    if (courtName.empty() || time.empty() || memberId.empty() || memberName.empty() || date.empty()) {
+        cout << "Missing required fields in book_padel_court request" << endl;
+        return {{"status", "error"}, {"message", "Missing required fields"}};
+    }
+
+    Court* court = courtSelection.selectCourt(courtName);
+    if (!court) {
+        cout << "Court lookup failed for: " << courtName << endl;
+        return {{"status", "error"}, {"message", "Court with name " + courtName + " not found"}};
+    }
+
+    cout << "Booking court: " << courtName << ", time: " << time << ", date: " << date
+         << ", member: " << memberId << endl;
+
+    if (!court->bookTimeSlot(time, memberId)) {
+        cout << "Failed to book time slot: " << time << " for court: " << courtName << endl;
+        return {{"status", "error"}, {"message", "Time slot not available or already booked"}};
+    }
+
+    string path = "padel-classes.json"; // Use consistent path
+    json centers = FileManager::load(path);
+    if (!centers.is_array()) centers = json::array();
+    bool courtFound = false;
+    for (auto& center : centers) {
+        if (center.value("name", "") == courtName) {
+            courtFound = true;
+            center["availableTimes"] = json::array();
+            for (const auto& t : court->availableTimes) {
+                center["availableTimes"].push_back(t);
+            }
+            if (!center.contains("bookedTimes")) {
+                center["bookedTimes"] = json::object();
+            }
+            center["bookedTimes"][time] = memberId;
+            break;
+        }
+    }
+    if (courtFound) {
+        try {
+            FileManager::save(centers, path);
+        } catch (const std::exception& e) {
+            cout << "Failed to save " << path << ": " << e.what() << endl;
+            return {{"status", "error"}, {"message", "Failed to save booking"}};
+        }
+    } else {
+        cout << "Court not found in JSON for saving: " << courtName << endl;
+        return {{"status", "error"}, {"message", "Court not found in data"}};
+    }
+
+    bookingSystem.incrementBookingCount(memberId, memberName);
+    return {{"status", "success"}, {"message", "Court booked successfully"}};
+}
+
+/*
+ * Cancels a member's padel court booking, updating court data.
+ * */
+static json handleCancelPadelBooking(const json& receivedJson) {
+    if (!receivedJson.contains("data") || receivedJson["data"].is_null()) {
+        return {{"status", "error"}, {"message", "Data object is required"}};
+    }
+    const json& data = receivedJson["data"];
+
+    if (!data.contains("courtName") || !data.contains("time") || !data.contains("memberId")) {
+        return {{"status", "error"}, {"message", "courtName, time, and memberId are required"}};
+    }
+
+    string courtName = data["courtName"].get<string>();
+    string time = data["time"].get<string>();
+    string memberId = data["memberId"].get<string>();
+    string date = data.value("date", ""); // Date is optional in current implementation
+
+    // Validate member exists
+    json members = FileManager::load("data.json");
+    if (!members.is_array()) {
+        members = json::array();
+    }
+    bool memberFound = false;
+    for (const auto& member : members) {
+        string memberIdKey = member.contains("memberId") ? "memberId" : "id";
+        if (member[memberIdKey].get<string>() == memberId) {
+            memberFound = true;
+            break;
+        }
+    }
+    if (!memberFound) {
+        return {{"status", "error"}, {"message", "Member with memberId " + memberId + " not found"}};
+    }
+
+    // Select court
+    Court* court = courtSelection.selectCourt(courtName);
+    if (!court) {
+        return {{"status", "error"}, {"message", "Court with name " + courtName + " not found"}};
+    }
+
+    // Attempt to cancel the booking
+    if (!court->cancelTimeSlot(time, memberId)) {
+        return {{"status", "error"}, {"message", "Time slot " + time + " not booked by memberId " + memberId}};
+    }
+
+    // Update padel-classes.json
+    try {
+        json centers = FileManager::load("padel-classes.json");
+        if (!centers.is_array()) {
+            return {{"status", "error"}, {"message", "Failed to load court data"}};
+        }
+
+        bool courtFound = false;
+        for (auto& center : centers) {
+            if (center.value("name", "") == courtName) {
+                courtFound = true;
+                // Update only availableTimes and bookedTimes, preserve other fields
+                center["availableTimes"] = json::array();
+                for (const auto& t : court->availableTimes) {
+                    center["availableTimes"].push_back(t);
+                }
+                if (center.contains("bookedTimes") && center["bookedTimes"].is_object()) {
+                    center["bookedTimes"].erase(time);
+                    if (center["bookedTimes"].empty()) {
+                        center.erase("bookedTimes");
+                    }
+                }
+                // Other fields (name, location, image, etc.) are preserved
+                break;
+            }
+        }
+
+        if (!courtFound) {
+            return {{"status", "error"}, {"message", "Court not found in data"}};
+        }
+
+        FileManager::save(centers, "padel-classes.json");
+    } catch (const std::exception& e) {
+        return {{"status", "error"}, {"message", "Failed to save cancellation: " + string(e.what())}};
+    }
+
+    return {
+            {"status", "success"},
+            {"message", "Padel court booking canceled successfully"},
+            {"data", {{"courtName", courtName}, {"time", time}, {"memberId", memberId}}}
+    };
+}
+
+/*
+ * Retrieves the VIP status of a member based on their booking count.
+ * */
+json handleGetVIPStatus(const json &receivedJson)
+{
+    if (!receivedJson.contains("memberId") || !receivedJson["memberId"].is_string())
+    {
+        return {{"status", "error"}, {"message", "Valid memberId (string) is required"}};
+    }
+
+    std::string memberId = receivedJson["memberId"].get<std::string>();
+
+    // Validate member exists
+    json users = FileManager::load("data.json");
+    bool userFound = false;
+    bool isVIP = false;
+    for (const auto &user : users)
+    {
+        if (user["memberId"].get<std::string>() == memberId)
+        {
+            userFound = true;
+            isVIP = user.value("isVIP", false);
+            break;
+        }
+    }
+
+    if (!userFound)
+    {
+        return {{"status", "error"}, {"message", "Member with memberId " + memberId + " not found"}};
+    }
+
+    return {
+        {"status", "success"},
+        {"message", "VIP status retrieved successfully"},
+        {"data", {{"memberId", memberId}, {"isVIP", isVIP}}}};
+}
+
+/*
+ * Saves a new padel center with its details (name, times, location, image) to the JSON file.
+ * */
+json handleSavePadelCenter(const json &receivedJson)
+{
+    json centers = FileManager::load("padel-classes.json");
+    json centerData = receivedJson["data"];
+    if (!centerData.contains("name") || centerData["name"].get<std::string>().empty())
+    {
+        return {{"status", "error"}, {"message", "Center name is required"}};
+    }
+    if (!centerData.contains("times") || centerData["times"].get<std::string>().empty())
+    {
+        return {{"status", "error"}, {"message", "Available times are required"}};
+    }
+    if (!centerData.contains("image") || centerData["image"].get<std::string>().empty())
+    {
+        return {{"status", "error"}, {"message", "Image is required"}};
+    }
+    if (!centerData.contains("location") || centerData["location"].get<std::string>().empty())
+    {
+        return {{"status", "error"}, {"message", "Location is required"}};
+    }
+    std::string timesStr = centerData["times"].get<std::string>();
+    std::vector<std::string> timesList = split(timesStr, ',');
+    if (timesList.empty())
+    {
+        return {{"status", "error"}, {"message", "At least one available time is required"}};
+    }
+    json timesArray = json::array();
+    for (const auto &time : timesList)
+    {
+        timesArray.push_back(time);
+    }
+    centerData.erase("times");
+    centerData["availableTimes"] = timesArray;
+    centers.push_back(centerData);
+    FileManager::save(centers, "padel-classes.json");
+    return {
+        {"status", "success"},
+        {"message", "Padel center saved"},
+        {"data", centerData}};
+}
+
+/*
+ * Updates an existing padel center's details in the JSON file.
+ * */
+json handleUpdatePadelCenter(const json &receivedJson)
+{
+    json centers = FileManager::load("padel-classes.json");
+    json oldData = receivedJson["oldData"];
+    json newData = receivedJson["newData"];
+    if (!newData.contains("name") || newData["name"].get<std::string>().empty())
+    {
+        return {{"status", "error"}, {"message", "Center name is required"}};
+    }
+    if (!newData.contains("times") || newData["times"].get<std::string>().empty())
+    {
+        return {{"status", "error"}, {"message", "Available times are required"}};
+    }
+    if (!newData.contains("image") || newData["image"].get<std::string>().empty())
+    {
+        return {{"status", "error"}, {"message", "Image is required"}};
+    }
+    if (!newData.contains("location") || newData["location"].get<std::string>().empty())
+    {
+        return {{"status", "error"}, {"message", "Location is required"}};
+    }
+    std::string timesStr = newData["times"].get<std::string>();
+    std::vector<std::string> timesList = split(timesStr, ',');
+    if (timesList.empty())
+    {
+        return {{"status", "error"}, {"message", "At least one available time is required"}};
+    }
+    json timesArray = json::array();
+    for (const auto &time : timesList)
+    {
+        timesArray.push_back(time);
+    }
+    newData.erase("times");
+    newData["availableTimes"] = timesArray;
+    json newCenters = json::array();
+    bool found = false;
+    for (const auto &center : centers)
+    {
+        if (center == oldData)
+        {
+            found = true;
+        }
+        else
+        {
+            newCenters.push_back(center);
+        }
+    }
+    if (!found)
+    {
+        return {{"status", "error"}, {"message", "Padel center to update not found"}};
+    }
+    newCenters.push_back(newData);
+    FileManager::save(newCenters, "padel-classes.json");
+    return {
+        {"status", "success"},
+        {"message", "Padel center updated"},
+        {"data", newData}};
+}
+
+/*
+ * Retrieves the list of all padel centers from the JSON file.
+ * */
+json handleGetPadelCenters()
+{
+    json centers = FileManager::load("padel-classes.json");
+    return {{"status", "success"}, {"data", centers}};
+}
+
+/*
+ * Deletes a padel center from the JSON file.
+ * */
+json handleDeletePadelCenter(const json &receivedJson)
+{
+    json centers = FileManager::load("padel-classes.json");
+    json centerToDelete = receivedJson["data"];
+    json newCenters = json::array();
+
+    for (const auto &center : centers)
+    {
+        if (center != centerToDelete)
+        {
+            newCenters.push_back(center);
+        }
+    }
+
+    FileManager::save(newCenters, "padel-classes.json");
+    return {{"status", "success"}, {"message", "Padel center deleted"}};
+}
+
+//=============================================================================
+// Subscription Management Handlers
+// Functions for managing memberships and subscriptions
+//=============================================================================
+
+/*
+ * Retrieves active subscriptions for a member, including their date of birth.
+ * */
 json handleGetActiveSubscription(const json &receivedJson)
 {
     // Validate that memberId exists
@@ -1024,12 +1307,18 @@ json handleGetActiveSubscription(const json &receivedJson)
     return {{"status", "success"}, {"data", activeSubs}};
 }
 
+/*
+ * Retrieves all available subscription plans from the JSON file.
+ * */
 json handleGetSubscriptionPlans()
 {
     json plans = FileManager::load("subscriptions.json");
     return {{"status", "success"}, {"data", plans}};
 }
 
+/*
+ * Subscribes a member to a plan, updating subscription data and files.
+ * */
 json handleSubscribePlan(const json &receivedJson)
 {
     std::cout << "Processing handleSubscribePlan with request: " << receivedJson.dump() << std::endl;
@@ -1285,6 +1574,9 @@ json handleSubscribePlan(const json &receivedJson)
     return {{"status", "success"}, {"message", "Subscribed successfully"}};
 }
 
+/*
+ * Adds a new member with subscription details to the system and JSON file.
+ * */
 json handleAddMember(const json &receivedJson)
 {
     std::cout << "Processing handleAddMember with request: " << receivedJson.dump() << std::endl;
@@ -1436,6 +1728,9 @@ json handleAddMember(const json &receivedJson)
     return {{"status", "success"}, {"message", "Member added successfully"}};
 }
 
+/*
+ * Verifies if a member exists by checking their memberId and date of birth.
+ * */
 json handleCheckMember(const json &receivedJson)
 {
     std::cout << "Processing handleCheckMember with request: " << receivedJson.dump() << std::endl;
@@ -1487,39 +1782,55 @@ json handleCheckMember(const json &receivedJson)
     return {{"status", "error"}, {"message", "Member with memberId " + memberId + " not found"}};
 }
 
-json handleAddStaff(const json& receivedJson) {
-    try {
+/*
+ * Adds a new staff member to the system and saves to the JSON file.
+ * */
+json handleAddStaff(const json &receivedJson)
+{
+    try
+    {
         json data = receivedJson["data"];
         Staff s;
         s.addStaff(
-                data["username"].get<std::string>(),
-                data["password"].get<std::string>(),
-                data["role"].get<std::string>()
-        );
+            data["username"].get<std::string>(),
+            data["password"].get<std::string>(),
+            data["role"].get<std::string>());
         gymSystem.addStaff(s);
 
         // Save to staff.json
         json staffData = FileManager::load("staff.json");
-        if (!staffData.is_array()) staffData = json::array();
+        if (!staffData.is_array())
+            staffData = json::array();
         staffData.push_back(s.toJson());
         FileManager::save(staffData, "staff.json");
 
         return {{"status", "success"}, {"message", "Staff added successfully"}};
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception &e)
+    {
         return {{"status", "error"}, {"message", "Failed to add staff: " + std::string(e.what())}};
     }
 }
 
+/*
+ * Retrieves the list of all members from the system.
+ * */
 json handleGetMembers()
 {
     return {{"status", "success"}, {"data", gymSystem.getMembers()}};
 }
 
+/*
+ * Retrieves the list of all staff members from the system.
+ * */
 json handleGetStaff()
 {
     return {{"status", "success"}, {"data", gymSystem.getStaff()}};
 }
 
+/*
+ * Renews a member's subscription, updating plan details and files.
+ * */
 json handleRenewSubscription(const json &receivedJson)
 {
     if (!receivedJson.contains("data") || receivedJson["data"].is_null())
@@ -1654,6 +1965,9 @@ json handleRenewSubscription(const json &receivedJson)
     }
 }
 
+/*
+ * Cancels a member's membership, deactivating them and clearing their subscription and workout history.
+ * */
 json handleCancelMembership(const json &receivedJson)
 {
     if (!receivedJson.contains("data") || receivedJson["data"].is_null())
@@ -1726,7 +2040,9 @@ json handleCancelMembership(const json &receivedJson)
     }
 }
 
-// New Workout History Handlers
+/*
+ * Retrieves a member's workout history from the system.
+ * */
 json handleGetWorkoutHistory(const json &receivedJson)
 {
     if (!receivedJson.contains("memberId") || !receivedJson["memberId"].is_string())
@@ -1764,6 +2080,9 @@ json handleGetWorkoutHistory(const json &receivedJson)
     }
 }
 
+/*
+ * Adds a workout to a member's history, validating member status and required fields.
+ * */
 json handleAddWorkout(const json &receivedJson)
 {
     if (!receivedJson.contains("memberId") || !receivedJson["memberId"].is_string())
@@ -1821,6 +2140,9 @@ json handleAddWorkout(const json &receivedJson)
     }
 }
 
+/*
+ * Clears a member's workout history from the system.
+ * */
 json handleClearWorkoutHistory(const json &receivedJson)
 {
     if (!receivedJson.contains("memberId") || !receivedJson["memberId"].is_string())
@@ -1858,6 +2180,14 @@ json handleClearWorkoutHistory(const json &receivedJson)
     }
 }
 
+//=============================================================================
+// Network Communication
+// Core server functionality for handling client connections
+//=============================================================================
+
+/*
+ * Processes incoming JSON requests, routing them to the appropriate handler based on the action.
+ * */
 json processRequest(const json &receivedJson)
 {
     std::string action = receivedJson.value("action", "");
@@ -1971,10 +2301,25 @@ json processRequest(const json &receivedJson)
     {
         return handleCheckMember(receivedJson);
     }
+    else if (action == "book_padel_court")
+    {
+        return handleBookPadelCourt(receivedJson);
+    }
+    else if (action == "cancel_padel_booking")
+    {
+        return handleCancelPadelBooking(receivedJson);
+    }
+    else if (action == "get_vip_status")
+    {
+        return handleGetVIPStatus(receivedJson);
+    }
 
     return {{"status", "error"}, {"message", "Unknown action: " + action}};
 }
 
+/*
+ * Handles client connections, receiving requests, processing them, and sending responses.
+ * */
 void handleClient(SOCKET clientSocket)
 {
     std::string request;
