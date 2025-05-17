@@ -2,8 +2,14 @@
     {
         "availableTimes": [
             "02:00 PM",
-            "10:00 AM",
-            "12:00 PM"
+            "03:30 PM",
+            "05:00 PM",
+            "06:30 PM",
+            "08:00 AM",
+            "08:00 PM",
+            "09:30 AM",
+            "11:00 AM",
+            "12:30 PM"
         ],
         "image": "/images/padelace.jpg",
         "location": "Zamalek, Cairo",
@@ -11,9 +17,15 @@
     },
     {
         "availableTimes": [
+            "08:00 AM",
+            "09:30 AM",
             "11:00 AM",
-            "01:00 PM",
-            "03:00 PM"
+            "12:30 PM",
+            "02:00 PM",
+            "03:30 PM",
+            "05:00 PM",
+            "06:30 PM",
+            "08:00 PM"
         ],
         "image": "/images/padelhood.png",
         "location": "Sheikh Zayed, Giza",

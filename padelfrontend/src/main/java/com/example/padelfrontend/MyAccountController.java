@@ -7,18 +7,20 @@ import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -292,7 +294,7 @@ public class MyAccountController {
 
         // Validate input (basic example)
         if (newFirstName.isEmpty() || newLastName.isEmpty() || newPhoneNumber.isEmpty() || newUsername.isEmpty()) {
-            showAlert("Error", "All fields except email must be filled.");
+            showAlert("All fields except email must be filled.", getStage());
             return;
         }
 
@@ -345,7 +347,7 @@ public class MyAccountController {
                         isEditing = false;
                         editButton.setVisible(true);
                         saveButton.setVisible(false);
-                        showAlert("Success", "User information updated successfully.");
+                        showAlert( "User information updated successfully.", getStage());
                     });
                 } else {
                     throw new Exception(jsonResponse.optString("message", "Failed to update user info"));
@@ -354,7 +356,7 @@ public class MyAccountController {
                 socket.close();
             } catch (Exception ex) {
                 Platform.runLater(() -> {
-                    showAlert("Error", "Failed to update user info: " + ex.getMessage());
+                    showAlert("Failed to update user info: " + ex.getMessage(), getStage());
                     isEditing = false;
                     editButton.setVisible(true);
                     saveButton.setVisible(false);
@@ -401,7 +403,7 @@ public class MyAccountController {
         } catch (Exception e) {
             isNavigating = false;
             System.err.println("Failed to navigate to page " + fxmlFile + ": " + e.getMessage());
-            showAlert("Error", "Unable to load page: " + e.getMessage());
+            showAlert("Unable to load page: " + e.getMessage(), getStage());
         }
     }
 
@@ -429,11 +431,73 @@ public class MyAccountController {
         }
     }
 
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
+    /**
+     * Shows an alert dialog with the specified title and message.
+     */
+    private void showAlert(String message, Stage owner) {
+        Alert alert = new Alert(Alert.AlertType.NONE, "", ButtonType.OK);
+        alert.initOwner(owner);
+        alert.initModality(Modality.APPLICATION_MODAL);
         alert.setHeaderText(null);
-        alert.setContentText(message);
+        alert.setGraphic(null);
+
+        // Content pane
+        VBox contentPane = new VBox(15);
+        contentPane.getStyleClass().add("custom-alert");
+        contentPane.setPadding(new Insets(20));
+        contentPane.setAlignment(Pos.CENTER);
+        contentPane.setPrefSize(300, 200);
+
+        // Message label
+        Label messageLabel = new Label(message);
+        messageLabel.getStyleClass().add("alert-message");
+        messageLabel.setWrapText(true);
+        messageLabel.setMaxWidth(260);
+        messageLabel.setAlignment(Pos.CENTER);
+
+        // OK button
+        Button okButton = new Button("OK");
+        okButton.getStyleClass().add("alert-button");
+        okButton.setPrefWidth(120);
+        okButton.setPrefHeight(36);
+        okButton.setOnAction(e -> alert.close());
+
+        contentPane.getChildren().addAll(messageLabel, okButton);
+
+        // Set content to DialogPane
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.setContent(contentPane);
+        dialogPane.getStylesheets().add(getClass().getResource("home.css").toExternalForm());
+        dialogPane.setStyle("-fx-background-color: transparent;");
+        dialogPane.setMinSize(300, 200);
+        dialogPane.setMaxSize(300, 200);
+
+        // Style the default OK button (hidden but ensures native closing)
+        dialogPane.lookupButton(ButtonType.OK).setVisible(false);
+
+        // Transparent stage
+        Stage alertStage = (Stage) dialogPane.getScene().getWindow();
+        alertStage.initStyle(StageStyle.TRANSPARENT);
+        alertStage.getScene().setFill(null);
+
+        // Allow closing with Escape key
+        dialogPane.getScene().setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                alert.close();
+            }
+        });
+
+        // Fade-in animation
+        contentPane.setOpacity(0);
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), contentPane);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        alert.setOnShown(e -> fadeIn.play());
+
         alert.showAndWait();
+    }
+
+    private Stage getStage() {
+        return (Stage) accountRoot.getScene().getWindow();
     }
 }

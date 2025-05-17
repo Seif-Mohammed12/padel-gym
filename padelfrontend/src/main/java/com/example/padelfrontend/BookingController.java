@@ -15,8 +15,13 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 import org.json.JSONArray;
@@ -93,13 +98,29 @@ public class BookingController {
     /**
      * Updates the login button text based on the user's login state.
      */
-    private void updateLoginButton() {
+    void updateLoginButton() {
         AppContext context = AppContext.getInstance();
+        String originalText;
         if (context.isLoggedIn()) {
             String firstName = context.getFirstName();
-            loginButton.setText("Welcome, " + firstName);
+            originalText = "Welcome, " + firstName;
+            loginButton.setText(originalText);
+            loginButton.setMinWidth(150); // Set a minimum width to prevent layout shifts
+            // Add hover effects to change text to "Logout" when signed in
+            loginButton.setOnMouseEntered(e -> {
+                loginButton.setText("Logout");
+                loginButton.requestLayout(); // Force layout update to prevent text overlap
+            });
+            loginButton.setOnMouseExited(e -> {
+                loginButton.setText(originalText);
+                loginButton.requestLayout(); // Force layout update to ensure proper rendering
+            });
         } else {
-            loginButton.setText("Login");
+            originalText = "Login";
+            loginButton.setText(originalText);
+            // Remove hover effects when not signed in to avoid interference
+            loginButton.setOnMouseEntered(null);
+            loginButton.setOnMouseExited(null);
         }
     }
 
@@ -268,7 +289,7 @@ public class BookingController {
 
                 socket.close();
             } catch (Exception ex) {
-                Platform.runLater(() -> showAlert("Error", "Failed to load padel places: " + ex.getMessage()));
+                Platform.runLater(() -> showAlert("Failed to load padel places: " + ex.getMessage(), getStage()));
             }
         }).start();
     }
@@ -357,43 +378,76 @@ public class BookingController {
         timeGrid.setVgap(10);
         timeGrid.setAlignment(Pos.TOP_RIGHT);
 
+        // Booked times grid (below available times)
+        GridPane bookedGrid = new GridPane();
+        bookedGrid.setHgap(10);
+        bookedGrid.setVgap(10);
+        bookedGrid.setAlignment(Pos.TOP_RIGHT);
+
         // Booking panel (hidden by default)
+        StackPane bookingPanelContainer = new StackPane();
+        bookingPanelContainer.setAlignment(Pos.TOP_RIGHT);
+        bookingPanelContainer.setVisible(false);
+        bookingPanelContainer.setManaged(false);
+        bookingPanelContainer.setOpacity(0);
+
+        // Backdrop for depth
+        Rectangle backdrop = new Rectangle(280, 280);
+        backdrop.setFill(Color.color(0, 0, 0, 0.3));
+        backdrop.setArcWidth(30);
+        backdrop.setArcHeight(30);
+
+        // Inner VBox for booking panel content
         VBox bookingPanel = new VBox(15);
         bookingPanel.getStyleClass().add("booking-panel");
-        bookingPanel.setVisible(false);
-        bookingPanel.setManaged(false);
-        bookingPanel.setOpacity(0);
-        bookingPanel.setPadding(new Insets(15));
-        bookingPanel.setAlignment(Pos.TOP_RIGHT);
+        bookingPanel.setPadding(new Insets(20));
+        bookingPanel.setAlignment(Pos.TOP_CENTER);
+        bookingPanel.setPrefWidth(280);
+        bookingPanel.setMinWidth(280);
+        bookingPanel.setMaxWidth(280);
+        bookingPanel.setPrefHeight(280);
+        bookingPanel.setMinHeight(280);
+        bookingPanel.setMaxHeight(320);
 
         // Booking panel content
-        Label bookingTitle = new Label("BOOKING DETAILS");
+        Label bookingTitle = new Label("Book Your Slot");
         bookingTitle.getStyleClass().add("booking-title");
 
-        HBox courtInfo = new HBox(10);
+        HBox courtInfo = new HBox(8);
         Label courtIcon = new Label("🏟️");
+        courtIcon.getStyleClass().add("booking-icon");
         Label courtName = new Label(name);
+        courtName.getStyleClass().add("booking-text");
+        courtName.setWrapText(true);
+        courtName.setMaxWidth(210);
         courtInfo.getChildren().addAll(courtIcon, courtName);
-        courtInfo.setAlignment(Pos.CENTER_LEFT);
+        courtInfo.setAlignment(Pos.CENTER);
 
-        HBox timeInfo = new HBox(10);
+        HBox timeInfo = new HBox(8);
         Label timeIcon = new Label("🕒");
+        timeIcon.getStyleClass().add("booking-icon");
         Label timeLabel = new Label();
+        timeLabel.getStyleClass().add("booking-text");
         timeInfo.getChildren().addAll(timeIcon, timeLabel);
-        timeInfo.setAlignment(Pos.CENTER_LEFT);
+        timeInfo.setAlignment(Pos.CENTER);
 
-        HBox dateInfo = new HBox(10);
+        HBox dateInfo = new HBox(8);
         Label dateIcon = new Label("📅");
+        dateIcon.getStyleClass().add("booking-icon");
         Label dateInfoLabel = new Label(dateText);
+        dateInfoLabel.getStyleClass().add("booking-text");
         dateInfo.getChildren().addAll(dateIcon, dateInfoLabel);
-        dateInfo.setAlignment(Pos.CENTER_LEFT);
+        dateInfo.setAlignment(Pos.CENTER);
 
-        Button bookNowBtn = new Button("CONFIRM BOOKING");
-        bookNowBtn.getStyleClass().add("book-now-button");
+        HBox buttonContainer = new HBox(10);
+        buttonContainer.setAlignment(Pos.CENTER);
 
-        Button cancelBtn = new Button("CANCEL BOOKING");
-        cancelBtn.getStyleClass().add("cancel-button"); // Add CSS class for styling
-        cancelBtn.setVisible(false); // Hidden by default
+        Button actionButton = new Button("Confirm");
+        actionButton.getStyleClass().add("book-now-button");
+        actionButton.setPrefWidth(120);
+        actionButton.setPrefHeight(36);
+
+        buttonContainer.getChildren().add(actionButton);
 
         bookingPanel.getChildren().addAll(
                 bookingTitle,
@@ -401,20 +455,17 @@ public class BookingController {
                 courtInfo,
                 timeInfo,
                 dateInfo,
-                bookNowBtn,
-                cancelBtn
+                new Region(),
+                buttonContainer
         );
+        VBox.setVgrow(new Region(), Priority.ALWAYS);
+
+        bookingPanelContainer.getChildren().addAll(backdrop, bookingPanel);
 
         // Track selected time button
         final Button[] selectedTimeButton = {null};
         AppContext context = AppContext.getInstance();
         String memberId = context.isLoggedIn() ? context.getMemberId() : null;
-
-        // Booked times grid (below available times)
-        GridPane bookedGrid = new GridPane();
-        bookedGrid.setHgap(10);
-        bookedGrid.setVgap(10);
-        bookedGrid.setAlignment(Pos.TOP_RIGHT);
 
         // Check for booked times
         JSONObject place = findPlaceByName(name);
@@ -428,21 +479,28 @@ public class BookingController {
                 String bookedMemberId = place.getJSONObject("bookedTimes").getString(time);
                 if (bookedMemberId.equals(memberId)) {
                     Button bookedBtn = new Button(time + " (Booked)");
-                    bookedBtn.getStyleClass().add("booked-button"); // Style for booked times
+                    bookedBtn.getStyleClass().add("booked-button");
                     bookedBtn.setOnAction(e -> {
                         timeLabel.setText(time);
-                        bookNowBtn.setVisible(false);
-                        cancelBtn.setVisible(true);
+                        actionButton.setText("Cancel");
+                        actionButton.getStyleClass().remove("book-now-button");
+                        actionButton.getStyleClass().add("cancel-button");
 
-                        if (!bookingPanel.isVisible()) {
-                            bookingPanel.setVisible(true);
-                            bookingPanel.setManaged(true);
-                            FadeTransition fadeIn = new FadeTransition(Duration.millis(300), bookingPanel);
+                        if (selectedTimeButton[0] != null) {
+                            selectedTimeButton[0].getStyleClass().remove("time-button-selected");
+                        }
+                        bookedBtn.getStyleClass().add("time-button-selected");
+                        selectedTimeButton[0] = bookedBtn;
+
+                        if (!bookingPanelContainer.isVisible()) {
+                            bookingPanelContainer.setVisible(true);
+                            bookingPanelContainer.setManaged(true);
+                            bookingPanel.getStyleClass().add("visible-panel");
+                            FadeTransition fadeIn = new FadeTransition(Duration.millis(300), bookingPanelContainer);
                             fadeIn.setFromValue(0);
                             fadeIn.setToValue(1);
                             fadeIn.play();
                         }
-                        selectedTimeButton[0] = bookedBtn;
                     });
 
                     int row = bookedIndex / bookedColumns;
@@ -462,56 +520,60 @@ public class BookingController {
 
             timeBtn.setOnAction(e -> {
                 timeLabel.setText(time);
-                bookNowBtn.setVisible(true);
-                cancelBtn.setVisible(false);
+                actionButton.setText("Confirm");
+                actionButton.getStyleClass().remove("cancel-button");
+                actionButton.getStyleClass().add("book-now-button");
 
                 if (selectedTimeButton[0] == timeBtn) {
-                    FadeTransition fadeOut = new FadeTransition(Duration.millis(200), bookingPanel);
+                    FadeTransition fadeOut = new FadeTransition(Duration.millis(200), bookingPanelContainer);
                     fadeOut.setFromValue(1);
                     fadeOut.setToValue(0);
                     fadeOut.setOnFinished(event -> {
-                        bookingPanel.setVisible(false);
-                        bookingPanel.setManaged(false);
+                        bookingPanelContainer.setVisible(false);
+                        bookingPanelContainer.setManaged(false);
+                        bookingPanel.getStyleClass().remove("visible-panel");
+                        timeBtn.getStyleClass().remove("time-button-selected");
                     });
                     fadeOut.play();
                     selectedTimeButton[0] = null;
                 } else {
-                    if (!bookingPanel.isVisible()) {
-                        bookingPanel.setVisible(true);
-                        bookingPanel.setManaged(true);
-                        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), bookingPanel);
+                    if (selectedTimeButton[0] != null) {
+                        selectedTimeButton[0].getStyleClass().remove("time-button-selected");
+                    }
+                    timeBtn.getStyleClass().add("time-button-selected");
+                    selectedTimeButton[0] = timeBtn;
+
+                    if (!bookingPanelContainer.isVisible()) {
+                        bookingPanelContainer.setVisible(true);
+                        bookingPanelContainer.setManaged(true);
+                        bookingPanel.getStyleClass().add("visible-panel");
+                        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), bookingPanelContainer);
                         fadeIn.setFromValue(0);
                         fadeIn.setToValue(1);
                         fadeIn.play();
                     }
-                    selectedTimeButton[0] = timeBtn;
                 }
             });
 
-            bookNowBtn.setOnAction(e -> {
-                bookPadelCourt(name, timeLabel.getText(), datePicker.getValue());
-                FadeTransition fadeOut = new FadeTransition(Duration.millis(200), bookingPanel);
+            actionButton.setOnAction(e -> {
+                if (actionButton.getText().equals("Confirm")) {
+                    bookPadelCourt(name, timeLabel.getText(), datePicker.getValue());
+                } else {
+                    cancelPadelCourt(name, timeLabel.getText(), datePicker.getValue());
+                }
+                FadeTransition fadeOut = new FadeTransition(Duration.millis(200), bookingPanelContainer);
                 fadeOut.setFromValue(1);
                 fadeOut.setToValue(0);
                 fadeOut.setOnFinished(event -> {
-                    bookingPanel.setVisible(false);
-                    bookingPanel.setManaged(false);
+                    bookingPanelContainer.setVisible(false);
+                    bookingPanelContainer.setManaged(false);
+                    bookingPanel.getStyleClass().remove("visible-panel");
+                    if (selectedTimeButton[0] != null) {
+                        selectedTimeButton[0].getStyleClass().remove("time-button-selected");
+                        selectedTimeButton[0] = null;
+                    }
                 });
                 fadeOut.play();
-                selectedTimeButton[0] = null;
-            });
-
-            cancelBtn.setOnAction(e -> {
-                cancelPadelCourt(name, timeLabel.getText(), datePicker.getValue());
-                FadeTransition fadeOut = new FadeTransition(Duration.millis(200), bookingPanel);
-                fadeOut.setFromValue(1);
-                fadeOut.setToValue(0);
-                fadeOut.setOnFinished(event -> {
-                    bookingPanel.setVisible(false);
-                    bookingPanel.setManaged(false);
-                });
-                fadeOut.play();
-                selectedTimeButton[0] = null;
             });
 
             int row = j / columns;
@@ -520,17 +582,29 @@ public class BookingController {
         }
 
         // Add grids to right section
-        rightSection.getChildren().addAll(timeGrid, bookedGrid, bookingPanel);
+        rightSection.getChildren().addAll(timeGrid, bookedGrid, bookingPanelContainer);
 
         // Main content container
         VBox cardContent = new VBox(15);
         cardContent.setAlignment(Pos.TOP_CENTER);
 
         // Horizontal content with left section and right section
-        HBox mainContent = new HBox();
+        HBox mainContent = new HBox(20);
         mainContent.setAlignment(Pos.CENTER_LEFT);
+
+        // Left section
+        leftSection.setPrefWidth(500);
+        HBox.setHgrow(leftSection, Priority.NEVER);
+
+        // Right section
+        rightSection.setAlignment(Pos.TOP_RIGHT);
+        HBox.setHgrow(rightSection, Priority.ALWAYS);
+        rightSection.setMaxWidth(Double.MAX_VALUE);
+
+        // Spacer to push rightSection to the far right
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
+
         mainContent.getChildren().addAll(leftSection, spacer, rightSection);
 
         cardContent.getChildren().add(mainContent);
@@ -552,11 +626,11 @@ public class BookingController {
     private void cancelPadelCourt(String courtName, String time, LocalDate date) {
         AppContext context = AppContext.getInstance();
         if (!context.isLoggedIn()) {
-            showAlert("Error", "You must be logged in to cancel a booking.");
+            showAlert( "You must be logged in to cancel a booking.", getStage());
             return;
         }
         if (date == null) {
-            showAlert("Error", "Please select a date.");
+            showAlert("Please select a date.", getStage());
             return;
         }
 
@@ -586,16 +660,16 @@ public class BookingController {
                 String status = jsonResponse.optString("status", "error");
                 Platform.runLater(() -> {
                     if ("success".equals(status)) {
-                        showAlert("Success", "Booking for " + courtName + " at " + time + " on " + date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " cancelled!");
+                        showAlert( "Booking for " + courtName + " at " + time + " on " + date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " cancelled!", getStage());
                         fetchPadelPlaces(); // Refresh UI
                     } else {
-                        showAlert("Error", jsonResponse.optString("message", "Failed to cancel booking"));
+                        showAlert( jsonResponse.optString("message", "Failed to cancel booking"), getStage());
                     }
                 });
 
                 socket.close();
             } catch (Exception ex) {
-                Platform.runLater(() -> showAlert("Error", "Failed to cancel booking: " + ex.getMessage()));
+                Platform.runLater(() -> showAlert("Failed to cancel booking: " + ex.getMessage(), getStage()));
             }
         }).start();
     }
@@ -620,11 +694,11 @@ public class BookingController {
     private void bookPadelCourt(String courtName, String time, LocalDate date) {
         AppContext context = AppContext.getInstance();
         if (!context.isLoggedIn()) {
-            showAlert("Error", "You must be logged in to book a court.");
+            showAlert("You must be logged in to book a court.", getStage());
             return;
         }
         if (date == null) {
-            showAlert("Error", "Please select a date.");
+            showAlert("Please select a date.", getStage());
             return;
         }
 
@@ -655,16 +729,16 @@ public class BookingController {
                 String status = jsonResponse.optString("status", "error");
                 Platform.runLater(() -> {
                     if ("success".equals(status)) {
-                        showAlert("Success", "Court " + courtName + " booked for " + time + " on " + date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "!");
+                        showAlert("Court " + courtName + " booked for " + time + " on " + date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "!", getStage());
                         fetchPadelPlaces(); // Refresh UI, closing all panels
                     } else {
-                        showAlert("Error", jsonResponse.optString("message", "Failed to book court"));
+                        showAlert( jsonResponse.optString("message", "Failed to book court"), getStage());
                     }
                 });
 
                 socket.close();
             } catch (Exception ex) {
-                Platform.runLater(() -> showAlert("Error", "Failed to book court: " + ex.getMessage()));
+                Platform.runLater(() -> showAlert("Failed to book court: " + ex.getMessage(), getStage()));
             }
         }).start();
     }
@@ -859,6 +933,22 @@ public class BookingController {
         navigateToPage("home.fxml", -1);
     }
 
+    @FXML
+    private void goToLogin() {
+        AppContext context = AppContext.getInstance();
+        if (context.isLoggedIn()) {
+            context.clear();
+            loginButton.setText("Login");
+            loginButton.setOnMouseEntered(null);
+            loginButton.setOnMouseExited(null);
+            homeButton.getStyleClass().add("active");
+            loginButton.setMinWidth(Region.USE_COMPUTED_SIZE);
+            navigateToPage("home.fxml", -1);
+        } else {
+            fadeToPage("LoginPage.fxml");
+        }
+    }
+
     /**
      * Navigates to the Gym page with a slide transition.
      */
@@ -873,6 +963,36 @@ public class BookingController {
     @FXML
     private void goToSubscription() {
         navigateToPage("subscription.fxml", 1);
+    }
+
+    /**
+     * Navigates to a new page with a sequenced fade transition.
+     * @param fxmlFile The FXML file of the target page.
+     */
+    private void fadeToPage(String fxmlFile) {
+        try {
+            // Load the new page
+            Parent newPage = FXMLLoader.load(getClass().getResource(fxmlFile));
+            Scene currentScene = datePicker.getScene();
+            Parent currentPage = currentScene.getRoot();
+
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(500), currentPage);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+
+            fadeOut.setOnFinished(e -> {
+                currentScene.setRoot(newPage);
+                FadeTransition fadeIn = new FadeTransition(Duration.millis(500), newPage);
+                fadeIn.setFromValue(0.0);
+                fadeIn.setToValue(1.0);
+                fadeIn.play();
+            });
+
+            fadeOut.play();
+        } catch (IOException e) {
+            System.err.println("Error loading " + fxmlFile + ": " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -907,18 +1027,77 @@ public class BookingController {
             slideIn.play();
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Error", "Failed to navigate to page: " + e.getMessage());
+            showAlert("Failed to navigate to page: " + e.getMessage(), getStage());
         }
     }
 
     /**
      * Shows an alert dialog with the specified title and message.
      */
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
+    private void showAlert(String message, Stage owner) {
+        Alert alert = new Alert(Alert.AlertType.NONE, "", ButtonType.OK);
+        alert.initOwner(owner);
+        alert.initModality(Modality.APPLICATION_MODAL);
         alert.setHeaderText(null);
-        alert.setContentText(message);
+        alert.setGraphic(null);
+
+        // Content pane
+        VBox contentPane = new VBox(15);
+        contentPane.getStyleClass().add("custom-alert");
+        contentPane.setPadding(new Insets(20));
+        contentPane.setAlignment(Pos.CENTER);
+        contentPane.setPrefSize(300, 200);
+
+        // Message label
+        Label messageLabel = new Label(message);
+        messageLabel.getStyleClass().add("alert-message");
+        messageLabel.setWrapText(true);
+        messageLabel.setMaxWidth(260);
+        messageLabel.setAlignment(Pos.CENTER);
+
+        // OK button
+        Button okButton = new Button("OK");
+        okButton.getStyleClass().add("alert-button");
+        okButton.setPrefWidth(120);
+        okButton.setPrefHeight(36);
+        okButton.setOnAction(e -> alert.close());
+
+        contentPane.getChildren().addAll(messageLabel, okButton);
+
+        // Set content to DialogPane
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.setContent(contentPane);
+        dialogPane.getStylesheets().add(getClass().getResource("home.css").toExternalForm());
+        dialogPane.setStyle("-fx-background-color: transparent;");
+        dialogPane.setMinSize(300, 200);
+        dialogPane.setMaxSize(300, 200);
+
+        // Style the default OK button (hidden but ensures native closing)
+        dialogPane.lookupButton(ButtonType.OK).setVisible(false);
+
+        // Transparent stage
+        Stage alertStage = (Stage) dialogPane.getScene().getWindow();
+        alertStage.initStyle(StageStyle.TRANSPARENT);
+        alertStage.getScene().setFill(null);
+
+        // Allow closing with Escape key
+        dialogPane.getScene().setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                alert.close();
+            }
+        });
+
+        // Fade-in animation
+        contentPane.setOpacity(0);
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), contentPane);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        alert.setOnShown(e -> fadeIn.play());
+
         alert.showAndWait();
+    }
+
+    private Stage getStage() {
+        return (Stage) datePicker.getScene().getWindow();
     }
 }

@@ -1,12 +1,20 @@
 package com.example.padelfrontend;
 
+import javafx.animation.FadeTransition;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Callback;
+import javafx.util.Duration;
 import javafx.util.StringConverter;
 
 import java.time.LocalDate;
@@ -314,19 +322,19 @@ public class SubscriptionFormController {
 
         // Validation
         if (firstName.isEmpty()) {
-            showAlert("Error", "First name is required.");
+            showAlert("First name is required.", getStage());
             return;
         }
         if (lastName.isEmpty()) {
-            showAlert("Error", "Last name is required.");
+            showAlert("Last name is required.", getStage());
             return;
         }
         if (phoneNumber.length() <= 3 || !phoneNumber.startsWith("+20") || !phoneNumber.substring(3).matches("\\d{10,12}")) {
-            showAlert("Error", "Please enter a valid phone number (10-12 digits after +20).");
+            showAlert( "Please enter a valid phone number (10-12 digits after +20).", getStage());
             return;
         }
         if (dob == null || dob.isAfter(LocalDate.now().minusYears(16))) {
-            showAlert("Error", "Please select a valid date of birth (must be at least 16 years old).");
+            showAlert("Please select a valid date of birth (must be at least 16 years old).", getStage());
             return;
         }
 
@@ -383,15 +391,71 @@ public class SubscriptionFormController {
 
     /**
      * Shows an alert dialog with the specified title and message.
-     *
-     * @param title The title of the alert.
-     * @param message The message to display.
      */
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
+    private void showAlert(String message, Stage owner) {
+        Alert alert = new Alert(Alert.AlertType.NONE, "", ButtonType.OK);
+        alert.initOwner(owner);
+        alert.initModality(Modality.APPLICATION_MODAL);
         alert.setHeaderText(null);
-        alert.setContentText(message);
+        alert.setGraphic(null);
+
+        // Content pane
+        VBox contentPane = new VBox(15);
+        contentPane.getStyleClass().add("custom-alert");
+        contentPane.setPadding(new Insets(20));
+        contentPane.setAlignment(Pos.CENTER);
+        contentPane.setPrefSize(300, 200);
+
+        // Message label
+        Label messageLabel = new Label(message);
+        messageLabel.getStyleClass().add("alert-message");
+        messageLabel.setWrapText(true);
+        messageLabel.setMaxWidth(260);
+        messageLabel.setAlignment(Pos.CENTER);
+
+        // OK button
+        Button okButton = new Button("OK");
+        okButton.getStyleClass().add("alert-button");
+        okButton.setPrefWidth(120);
+        okButton.setPrefHeight(36);
+        okButton.setOnAction(e -> alert.close());
+
+        contentPane.getChildren().addAll(messageLabel, okButton);
+
+        // Set content to DialogPane
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.setContent(contentPane);
+        dialogPane.getStylesheets().add(getClass().getResource("home.css").toExternalForm());
+        dialogPane.setStyle("-fx-background-color: transparent;");
+        dialogPane.setMinSize(300, 200);
+        dialogPane.setMaxSize(300, 200);
+
+        // Style the default OK button (hidden but ensures native closing)
+        dialogPane.lookupButton(ButtonType.OK).setVisible(false);
+
+        // Transparent stage
+        Stage alertStage = (Stage) dialogPane.getScene().getWindow();
+        alertStage.initStyle(StageStyle.TRANSPARENT);
+        alertStage.getScene().setFill(null);
+
+        // Allow closing with Escape key
+        dialogPane.getScene().setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                alert.close();
+            }
+        });
+
+        // Fade-in animation
+        contentPane.setOpacity(0);
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), contentPane);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        alert.setOnShown(e -> fadeIn.play());
+
         alert.showAndWait();
+    }
+
+    private Stage getStage() {
+        return (Stage) confirmButton.getScene().getWindow();
     }
 }

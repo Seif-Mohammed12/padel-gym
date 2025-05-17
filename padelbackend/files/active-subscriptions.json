@@ -1,0 +1,13 @@
+[
+    {
+        "dob": "12-06-2005",
+        "duration": "1_month",
+        "expiryDate": "16-06-2025",
+        "history": [],
+        "isActive": true,
+        "memberId": "MEM724099",
+        "planName": "Basic",
+        "price": 79.99,
+        "startDate": "17-05-2025"
+    }
+]

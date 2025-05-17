@@ -1,5 +1,6 @@
 package com.example.padelfrontend;
 
+import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
 import javafx.animation.Interpolator;
@@ -15,6 +16,7 @@ import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -92,6 +94,7 @@ public class GymController {
     public void initialize() {
         setActiveButton(gymButton);
         initializeAppContext();
+        updateLoginButton();
         Platform.runLater(() -> {
             AppContext context = AppContext.getInstance();
             if (!context.isLoggedIn() || context.getSubscribedPlanName() == null) {
@@ -166,8 +169,36 @@ public class GymController {
      */
     private void initializeAppContext() {
         AppContext context = AppContext.getInstance();
-        loginButton.setText(context.isLoggedIn() ? "Welcome, " + context.getUsername() : "Login");
         context.loadActiveSubscriptions(true);
+    }
+
+    /**
+     * Updates the login button text based on the user's login state.
+     */
+    void updateLoginButton() {
+        AppContext context = AppContext.getInstance();
+        String originalText;
+        if (context.isLoggedIn()) {
+            String firstName = context.getFirstName();
+            originalText = "Welcome, " + firstName;
+            loginButton.setText(originalText);
+            loginButton.setMinWidth(150); // Set a minimum width to prevent layout shifts
+            // Add hover effects to change text to "Logout" when signed in
+            loginButton.setOnMouseEntered(e -> {
+                loginButton.setText("Logout");
+                loginButton.requestLayout(); // Force layout update to prevent text overlap
+            });
+            loginButton.setOnMouseExited(e -> {
+                loginButton.setText(originalText);
+                loginButton.requestLayout(); // Force layout update to ensure proper rendering
+            });
+        } else {
+            originalText = "Login";
+            loginButton.setText(originalText);
+            // Remove hover effects when not signed in to avoid interference
+            loginButton.setOnMouseEntered(null);
+            loginButton.setOnMouseExited(null);
+        }
     }
 
     /**
@@ -938,24 +969,64 @@ public class GymController {
      * Shows a styled alert dialog with the specified message.
      */
     private void showAlert(String message, Stage owner) {
-        Alert alert = new Alert(Alert.AlertType.WARNING, message);
+        Alert alert = new Alert(Alert.AlertType.NONE, "", ButtonType.OK);
         alert.initOwner(owner);
         alert.initModality(Modality.APPLICATION_MODAL);
+        alert.setHeaderText(null);
+        alert.setGraphic(null);
 
+        // Content pane
+        VBox contentPane = new VBox(15);
+        contentPane.getStyleClass().add("custom-alert");
+        contentPane.setPadding(new Insets(20));
+        contentPane.setAlignment(Pos.CENTER);
+        contentPane.setPrefSize(300, 200);
+
+        // Message label
+        Label messageLabel = new Label(message);
+        messageLabel.getStyleClass().add("alert-message");
+        messageLabel.setWrapText(true);
+        messageLabel.setMaxWidth(260);
+        messageLabel.setAlignment(Pos.CENTER);
+
+        // OK button
+        Button okButton = new Button("OK");
+        okButton.getStyleClass().add("alert-button");
+        okButton.setPrefWidth(120);
+        okButton.setPrefHeight(36);
+        okButton.setOnAction(e -> alert.close());
+
+        contentPane.getChildren().addAll(messageLabel, okButton);
+
+        // Set content to DialogPane
         DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.setContent(contentPane);
         dialogPane.getStylesheets().add(getClass().getResource("home.css").toExternalForm());
-        dialogPane.getStyleClass().add("error-dialog");
-        dialogPane.setHeaderText(null);
-        dialogPane.setGraphic(null);
+        dialogPane.setStyle("-fx-background-color: transparent;");
+        dialogPane.setMinSize(300, 200);
+        dialogPane.setMaxSize(300, 200);
 
-        dialogPane.setStyle("-fx-background-color: #f8d7da; -fx-background-radius: 20; -fx-border-radius: 20;");
+        // Style the default OK button (hidden but ensures native closing)
+        dialogPane.lookupButton(ButtonType.OK).setVisible(false);
 
-        dialogPane.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-        dialogPane.setMaxSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
-
+        // Transparent stage
         Stage alertStage = (Stage) dialogPane.getScene().getWindow();
         alertStage.initStyle(StageStyle.TRANSPARENT);
         alertStage.getScene().setFill(null);
+
+        // Allow closing with Escape key
+        dialogPane.getScene().setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                alert.close();
+            }
+        });
+
+        // Fade-in animation
+        contentPane.setOpacity(0);
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), contentPane);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        alert.setOnShown(e -> fadeIn.play());
 
         alert.showAndWait();
     }
@@ -1034,7 +1105,37 @@ public class GymController {
             loginButton.setText("Login");
             navigateToPage("home.fxml", -1);
         } else {
-            navigateToPage("LoginPage.fxml", -1);
+            fadeToPage("LoginPage.fxml");
+        }
+    }
+
+    /**
+     * Navigates to a new page with a sequenced fade transition.
+     * @param fxmlFile The FXML file of the target page.
+     */
+    private void fadeToPage(String fxmlFile) {
+        try {
+            // Load the new page
+            Parent newPage = FXMLLoader.load(getClass().getResource(fxmlFile));
+            Scene currentScene = bookingButton.getScene();
+            Parent currentPage = currentScene.getRoot();
+
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(500), currentPage);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+
+            fadeOut.setOnFinished(e -> {
+                currentScene.setRoot(newPage);
+                FadeTransition fadeIn = new FadeTransition(Duration.millis(500), newPage);
+                fadeIn.setFromValue(0.0);
+                fadeIn.setToValue(1.0);
+                fadeIn.play();
+            });
+
+            fadeOut.play();
+        } catch (IOException e) {
+            System.err.println("Error loading " + fxmlFile + ": " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

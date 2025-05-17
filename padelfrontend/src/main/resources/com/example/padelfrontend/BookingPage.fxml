@@ -26,7 +26,7 @@
             <Button fx:id="subscriptionButton" onAction="#goToSubscription" prefHeight="70.0" styleClass="nav-button" text="Subscription" />
             <Button fx:id="gymButton" onAction="#goToGym" prefHeight="70.0" styleClass="nav-button" text="Gym" />
             <Pane HBox.hgrow="ALWAYS" />
-            <Button fx:id="loginButton" styleClass="login-button" text="Login" />
+            <Button onAction="#goToLogin" fx:id="loginButton" styleClass="login-button" text="Login" />
         </HBox>
     </top>
 

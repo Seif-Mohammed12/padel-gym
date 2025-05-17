@@ -13,7 +13,9 @@
             "3_months": 84.99,
             "6_months": 149.99
         },
-        "subscribers": []
+        "subscribers": [
+            "MEM724099"
+        ]
     },
     {
         "features": [
@@ -46,6 +48,8 @@
             "3_months": 219.99,
             "6_months": 399.99
         },
-        "subscribers": []
+        "subscribers": [
+            "MEM724099"
+        ]
     }
 ]

@@ -1,0 +1,17 @@
+[
+    {
+        "dob": "12-06-2005",
+        "email": "",
+        "firstName": "Seif",
+        "id": "MEM724099",
+        "isActive": true,
+        "lastName": "Mohammed",
+        "phoneNumber": "+201099228486",
+        "subscription": {
+            "duration": "1_month",
+            "planName": "Basic",
+            "price": 79.99
+        },
+        "username": "seif_12"
+    }
+]
